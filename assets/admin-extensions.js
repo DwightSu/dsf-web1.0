@@ -77,41 +77,6 @@
     return filtered.length !== records.length;
   }
 
-  function updateSpecialRecord(id, updates) {
-    const records = getSpecialRecords();
-    const idx = records.findIndex(r => r.id === id);
-    if (idx !== -1) {
-      records[idx] = { ...records[idx], ...updates };
-      setStore('special_records', records);
-      return true;
-    }
-    return false;
-  }
-
-  function deleteSpecialRecord(id) {
-    const records = getSpecialRecords();
-    const filtered = records.filter(r => r.id !== id);
-    setStore('special_records', filtered);
-    return filtered.length !== records.length;
-  }
-
-  function addSpecialRecord(record) {
-    const records = getSpecialRecords();
-    records.unshift(record);
-    setStore('special_records', records);
-  }
-
-  function updateMember(id, updates) {
-    const members = getMembers();
-    const idx = members.findIndex(m => m.id === id);
-    if (idx !== -1) {
-      members[idx] = { ...members[idx], ...updates };
-      setStore('custom_members', members);
-      return true;
-    }
-    return false;
-  }
-
   function adjustMemberPoints(memberId, points, reason) {
     const record = {
       id: 'sr_' + Date.now(),
@@ -131,10 +96,10 @@
 
     const overlay = document.createElement('div');
     overlay.id = 'admin-modal-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;backdrop-filter:blur(4px);';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;padding:16px;backdrop-filter:blur(4px);';
     
     const modal = document.createElement('div');
-    modal.style.cssText = 'background:#1a1d23;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+    modal.style.cssText = 'background:#1a1d23;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
     modal.innerHTML = contentHtml;
     
     overlay.appendChild(modal);
@@ -154,44 +119,11 @@
     if (overlay) overlay.remove();
   }
 
-  function createEditButton(label, onClick) {
-    const btn = document.createElement('button');
-    btn.textContent = label;
-    btn.className = 'admin-edit-btn';
-    btn.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:6px 12px;font-size:12px;font-weight:500;color:#4ade80;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:8px;cursor:pointer;transition:all 0.2s;';
-    btn.addEventListener('mouseenter', function() {
-      this.style.background = 'rgba(74,222,128,0.2)';
-      this.style.borderColor = 'rgba(74,222,128,0.5)';
-    });
-    btn.addEventListener('mouseleave', function() {
-      this.style.background = 'rgba(74,222,128,0.1)';
-      this.style.borderColor = 'rgba(74,222,128,0.3)';
-    });
-    btn.addEventListener('click', onClick);
-    return btn;
-  }
-
-  function createDeleteButton(onClick) {
-    const btn = document.createElement('button');
-    btn.textContent = '删除';
-    btn.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:6px 12px;font-size:12px;font-weight:500;color:#f87171;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:8px;cursor:pointer;transition:all 0.2s;';
-    btn.addEventListener('mouseenter', function() {
-      this.style.background = 'rgba(248,113,113,0.2)';
-    });
-    btn.addEventListener('mouseleave', function() {
-      this.style.background = 'rgba(248,113,113,0.1)';
-    });
-    btn.addEventListener('click', onClick);
-    return btn;
-  }
-
   function injectGlobalStyles() {
     if (document.getElementById('admin-ext-styles')) return;
     const style = document.createElement('style');
     style.id = 'admin-ext-styles';
     style.textContent = `
-      .admin-edit-btn:hover { background: rgba(74,222,128,0.2) !important; }
-      .admin-score-badge { display:inline-flex;align-items:center;gap:4px;padding:2px 8px;font-size:12px;font-weight:600;color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:9999px; }
       .admin-input { width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:14px;transition:all 0.2s;box-sizing:border-box; }
       .admin-input:focus { outline:none;border-color:rgba(74,222,128,0.5);box-shadow:0 0 0 3px rgba(74,222,128,0.1); }
       .admin-label { display:block;font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);margin-bottom:6px; }
@@ -203,28 +135,40 @@
       .admin-btn-secondary:hover { background:rgba(255,255,255,0.1); }
       .admin-btn-danger { padding:10px 20px;font-size:14px;font-weight:600;color:#fff;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;border-radius:10px;cursor:pointer;transition:all 0.2s; }
       .admin-btn-danger:hover { transform:translateY(-1px);box-shadow:0 4px 12px rgba(239,68,68,0.4); }
-      .admin-score-row { display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:8px; }
+      .admin-score-row { display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:8px; }
       .admin-score-row-info { flex:1; }
       .admin-score-row-name { font-size:14px;font-weight:500;color:#fff;margin-bottom:2px; }
       .admin-score-row-reason { font-size:12px;color:rgba(255,255,255,0.5); }
-      .admin-score-row-points { font-size:16px;font-weight:700;margin-right:12px; }
+      .admin-score-row-points { font-size:16px;font-weight:700;margin-right:12px;min-width:60px;text-align:right; }
       .admin-score-row-points.positive { color:#4ade80; }
       .admin-score-row-points.negative { color:#f87171; }
       .admin-score-row-actions { display:flex;gap:6px; }
       .admin-empty { text-align:center;padding:30px;color:rgba(255,255,255,0.4);font-size:14px; }
-      .admin-member-card-score { display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08); }
-      .admin-float-btn { position:fixed;bottom:20px;right:20px;z-index:1000;padding:12px 20px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(34,197,94,0.4);transition:all 0.2s; }
+      .admin-score-badge { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;font-size:12px;font-weight:600;color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:9999px; }
+      .admin-float-panel { position:fixed;bottom:20px;right:20px;z-index:9999; }
+      .admin-float-btn { padding:12px 18px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(34,197,94,0.4);transition:all 0.2s;font-size:14px; }
       .admin-float-btn:hover { transform:translateY(-2px);box-shadow:0 6px 16px rgba(34,197,94,0.5); }
+      .admin-quick-panel { position:absolute;bottom:60px;right:0;background:#1a1d23;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;min-width:220px;box-shadow:0 10px 40px rgba(0,0,0,0.5);display:none; }
+      .admin-quick-panel.show { display:block; }
+      .admin-quick-item { padding:10px 12px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,0.8);font-size:13px;transition:all 0.15s;display:flex;align-items:center;gap:8px; }
+      .admin-quick-item:hover { background:rgba(255,255,255,0.05);color:#fff; }
+      .admin-quick-item.disabled { opacity:0.4;cursor:not-allowed; }
+      .admin-quick-divider { height:1px;background:rgba(255,255,255,0.1);margin:6px 0; }
+      .admin-score-total-card { background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px;text-align:center;margin-bottom:16px; }
+      .admin-score-total-label { font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px; }
+      .admin-score-total-value { font-size:28px;font-weight:700;color:#fbbf24; }
+      .admin-edit-icon-btn { display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.2);cursor:pointer;transition:all 0.2s; }
+      .admin-edit-icon-btn:hover { background:rgba(74,222,128,0.2); }
     `;
     document.head.appendChild(style);
   }
 
-  function getScoreboardMembers() {
-    const members = getMembers();
-    return members.map(m => ({
-      ...m,
-      score: calculateMemberPoints(m.id)
-    })).sort((a, b) => b.score - a.score);
+  function getCurrentPath() {
+    let path = window.location.pathname;
+    if (path.startsWith(BASE)) {
+      path = path.slice(BASE.length - 1);
+    }
+    return path;
   }
 
   function openScoreEditModal(member) {
@@ -242,8 +186,8 @@
           </div>
           <span class="admin-score-row-points ${r.points >= 0 ? 'positive' : 'negative'}">${r.points >= 0 ? '+' : ''}${r.points}</span>
           <div class="admin-score-row-actions">
-            <button class="admin-edit-record-btn" data-id="${r.id}" style="padding:4px 8px;font-size:11px;background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;">编辑</button>
-            <button class="admin-delete-record-btn" data-id="${r.id}" style="padding:4px 8px;font-size:11px;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.3);border-radius:6px;cursor:pointer;">删除</button>
+            <button class="admin-edit-record-btn" data-id="${r.id}" style="padding:5px 10px;font-size:11px;background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;">编辑</button>
+            <button class="admin-delete-record-btn" data-id="${r.id}" style="padding:5px 10px;font-size:11px;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.3);border-radius:6px;cursor:pointer;">删除</button>
           </div>
         </div>
       `).join('');
@@ -252,23 +196,23 @@
     const totalPoints = calculateMemberPoints(member.id);
 
     const html = `
-      <h2 class="admin-modal-title">✏️ 编辑积分 - ${member.nickname}</h2>
-      <div style="margin-bottom:20px;padding:16px;background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.2);border-radius:12px;text-align:center;">
-        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">当前总积分</div>
-        <div style="font-size:28px;font-weight:700;color:#fbbf24;">${totalPoints}</div>
+      <h2 class="admin-modal-title">✏️ 积分管理 - ${member.nickname}</h2>
+      <div class="admin-score-total-card">
+        <div class="admin-score-total-label">当前总积分</div>
+        <div class="admin-score-total-value">${totalPoints}</div>
       </div>
       <div style="margin-bottom:16px;">
         <label class="admin-label">快速调整积分</label>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <input type="number" id="quick-points" class="admin-input" placeholder="积分数值（正加负扣）" style="flex:1;min-width:120px;" />
           <input type="text" id="quick-reason" class="admin-input" placeholder="调整原因" style="flex:1;min-width:120px;" />
-          <button id="quick-add-btn" class="admin-btn-primary">调整</button>
+          <button id="quick-add-btn" class="admin-btn-primary">确认调整</button>
         </div>
       </div>
       <div style="margin-bottom:12px;">
-        <label class="admin-label">积分记录（${records.length}条）</label>
+        <label class="admin-label">积分记录列表（${records.length}条）</label>
       </div>
-      <div style="max-height:300px;overflow-y:auto;">
+      <div style="max-height:280px;overflow-y:auto;">
         ${recordsHtml}
       </div>
       <div class="admin-modal-footer">
@@ -276,7 +220,7 @@
       </div>
     `;
 
-    showModal(html, function(modal, overlay) {
+    showModal(html, function(modal) {
       modal.querySelector('#close-modal-btn').addEventListener('click', closeModal);
       
       modal.querySelector('#quick-add-btn').addEventListener('click', function() {
@@ -288,6 +232,7 @@
         }
         adjustMemberPoints(member.id, points, reason);
         openScoreEditModal(member);
+        triggerVueRefresh();
       });
 
       modal.querySelectorAll('.admin-edit-record-btn').forEach(btn => {
@@ -297,6 +242,7 @@
           if (!record) return;
           openRecordEditModal(record, function() {
             openScoreEditModal(member);
+            triggerVueRefresh();
           });
         });
       });
@@ -307,6 +253,7 @@
           if (confirm('确定要删除这条积分记录吗？')) {
             deleteScoreRecord(recordId);
             openScoreEditModal(member);
+            triggerVueRefresh();
           }
         });
       });
@@ -351,387 +298,366 @@
     });
   }
 
-  function openSpecialRecordEditModal(record) {
+  function openMemberSelectModal(title, onSelect) {
     const members = getMembers();
-    const memberOptions = members.map(m => 
-      `<option value="${m.id}" ${record.member_id === m.id ? 'selected' : ''}>${m.nickname}</option>`
-    ).join('');
-
+    
     const html = `
-      <h2 class="admin-modal-title">✏️ 编辑特殊记录</h2>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">标题</label>
-        <input type="text" id="sr-title" class="admin-input" value="${record.title || ''}" />
+      <h2 class="admin-modal-title">👤 ${title}</h2>
+      <div style="margin-bottom:12px;">
+        <input type="text" id="member-search" class="admin-input" placeholder="搜索成员..." />
       </div>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">描述</label>
-        <textarea id="sr-description" class="admin-input" rows="3" style="resize:vertical;">${record.description || ''}</textarea>
-      </div>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">类型</label>
-        <select id="sr-type" class="admin-input">
-          <option value="special" ${record.record_type === 'special' ? 'selected' : ''}>特殊成就</option>
-          <option value="achievement" ${record.record_type === 'achievement' ? 'selected' : ''}>成就</option>
-          <option value="record" ${record.record_type === 'record' ? 'selected' : ''}>记录</option>
-          <option value="other" ${record.record_type === 'other' ? 'selected' : ''}>其他</option>
-        </select>
-      </div>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">关联成员</label>
-        <select id="sr-member" class="admin-input">
-          <option value="">无</option>
-          ${memberOptions}
-        </select>
+      <div id="member-list" style="max-height:400px;overflow-y:auto;">
+        ${members.map(m => `
+          <div class="admin-member-item" data-id="${m.id}" data-name="${m.nickname}" style="padding:12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.15s;">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;">${m.nickname.charAt(0)}</div>
+            <div style="flex:1;">
+              <div style="color:#fff;font-weight:500;">${m.nickname}</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);">积分: ${calculateMemberPoints(m.id)}</div>
+            </div>
+          </div>
+        `).join('')}
       </div>
       <div class="admin-modal-footer">
-        <button class="admin-btn-secondary" id="cancel-sr-btn">取消</button>
-        <button class="admin-btn-primary" id="save-sr-btn">保存</button>
+        <button class="admin-btn-secondary" id="close-modal-btn">取消</button>
       </div>
     `;
 
     showModal(html, function(modal) {
-      modal.querySelector('#cancel-sr-btn').addEventListener('click', closeModal);
-      modal.querySelector('#save-sr-btn').addEventListener('click', function() {
-        const updates = {
-          title: modal.querySelector('#sr-title').value,
-          description: modal.querySelector('#sr-description').value,
-          record_type: modal.querySelector('#sr-type').value,
-          member_id: modal.querySelector('#sr-member').value || null
-        };
-        updateSpecialRecord(record.id, updates);
-        closeModal();
-        setTimeout(refreshPage, 100);
+      modal.querySelector('#close-modal-btn').addEventListener('click', closeModal);
+      
+      const searchInput = modal.querySelector('#member-search');
+      const memberList = modal.querySelector('#member-list');
+      
+      searchInput.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase();
+        memberList.querySelectorAll('.admin-member-item').forEach(item => {
+          const name = item.dataset.name.toLowerCase();
+          item.style.display = name.includes(keyword) ? '' : 'none';
+        });
+      });
+
+      memberList.querySelectorAll('.admin-member-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+          this.style.background = 'rgba(255,255,255,0.05)';
+        });
+        item.addEventListener('mouseleave', function() {
+          this.style.background = '';
+        });
+        item.addEventListener('click', function() {
+          const memberId = this.dataset.id;
+          const member = members.find(m => m.id === memberId);
+          if (member) {
+            closeModal();
+            onSelect(member);
+          }
+        });
       });
     });
   }
 
-  function openAddSpecialRecordModal() {
-    const members = getMembers();
-    const memberOptions = members.map(m => 
-      `<option value="${m.id}">${m.nickname}</option>`
-    ).join('');
-
-    const html = `
-      <h2 class="admin-modal-title">➕ 添加特殊记录</h2>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">标题 *</label>
-        <input type="text" id="sr-title" class="admin-input" placeholder="输入记录标题" />
-      </div>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">描述</label>
-        <textarea id="sr-description" class="admin-input" rows="3" style="resize:vertical;" placeholder="输入详细描述"></textarea>
-      </div>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">类型</label>
-        <select id="sr-type" class="admin-input">
-          <option value="special">特殊成就</option>
-          <option value="achievement">成就</option>
-          <option value="record">记录</option>
-          <option value="other">其他</option>
-        </select>
-      </div>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">关联成员</label>
-        <select id="sr-member" class="admin-input">
-          <option value="">无</option>
-          ${memberOptions}
-        </select>
-      </div>
-      <div class="admin-modal-footer">
-        <button class="admin-btn-secondary" id="cancel-sr-btn">取消</button>
-        <button class="admin-btn-primary" id="save-sr-btn">添加</button>
-      </div>
-    `;
-
-    showModal(html, function(modal) {
-      modal.querySelector('#cancel-sr-btn').addEventListener('click', closeModal);
-      modal.querySelector('#save-sr-btn').addEventListener('click', function() {
-        const title = modal.querySelector('#sr-title').value.trim();
-        if (!title) {
-          alert('请输入标题');
-          return;
-        }
-        const record = {
-          id: 'sp_' + Date.now(),
-          title: title,
-          description: modal.querySelector('#sr-description').value,
-          record_type: modal.querySelector('#sr-type').value,
-          member_id: modal.querySelector('#sr-member').value || null,
-          created_at: new Date().toISOString()
-        };
-        addSpecialRecord(record);
-        closeModal();
-        setTimeout(refreshPage, 100);
-      });
-    });
+  function triggerVueRefresh() {
+    try {
+      const e = new Event('storage');
+      window.dispatchEvent(e);
+    } catch(e) {}
   }
 
-  function refreshPage() {
-    window.location.reload();
-  }
-
-  function getCurrentPath() {
-    let path = window.location.pathname;
-    if (path.startsWith(BASE)) {
-      path = path.slice(BASE.length - 1);
-    }
-    return path;
-  }
-
-  function findMemberByName(nickname) {
-    const members = getMembers();
-    return members.find(m => m.nickname === nickname);
+  function findMemberById(memberId) {
+    return getMembers().find(m => m.id === memberId);
   }
 
   function enhanceScoreboardPage() {
     if (!isAdmin()) return;
     
-    const checkAndEnhance = function() {
-      if (document.querySelector('.admin-score-enhanced')) return;
+    const pageKey = 'scoreboard-enhanced';
+    if (document.body.dataset[pageKey]) return;
+    document.body.dataset[pageKey] = 'true';
 
-      const allText = document.body.innerText;
-      if (!allText.includes('积分') && !allText.includes('排行榜')) return;
-
-      const members = getScoreboardMembers();
-      const rows = document.querySelectorAll('.mc-card [class*="score"], .mc-card tr, [class*="rank-item"], [class*="score-item"]');
+    const addEditButtons = function() {
+      const allCards = document.querySelectorAll('.mc-card');
+      const members = getMembers();
       
-      members.forEach(member => {
-        const allElements = document.querySelectorAll('body *');
-        allElements.forEach(el => {
-          if (el.textContent.trim() === member.nickname && el.children.length === 0) {
-            const parent = el.closest('.mc-card, [class*="card"], [class*="item"], tr, [class*="row"], [class*="scoreboard"]');
-            if (parent && !parent.querySelector('.admin-edit-btn')) {
-              const btn = createEditButton('编辑积分', function() {
-                openScoreEditModal(member);
-              });
-              btn.style.marginTop = '8px';
-              parent.appendChild(btn);
-              parent.classList.add('admin-score-enhanced');
+      allCards.forEach(card => {
+        if (card.querySelector('.admin-edit-score-btn')) return;
+        
+        const link = card.querySelector('a[href*="/members/"], [to*="/members/"]');
+        if (!link) {
+          const text = card.textContent || '';
+          let foundMember = null;
+          for (const m of members) {
+            if (text.includes(m.nickname) && text.includes('积分')) {
+              foundMember = m;
+              break;
             }
           }
-        });
-      });
-    };
-
-    setTimeout(checkAndEnhance, 800);
-    setTimeout(checkAndEnhance, 2000);
-    
-    const observer = new MutationObserver(function() {
-      clearTimeout(window._scoreEnhanceTimer);
-      window._scoreEnhanceTimer = setTimeout(checkAndEnhance, 500);
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-  function enhanceSpecialRecordsPage() {
-    if (!isAdmin()) return;
-
-    const addButtons = function() {
-      if (document.querySelector('.admin-sr-enhanced')) return;
-
-      const allText = document.body.innerText;
-      if (!allText.includes('特殊') && !allText.includes('成就') && !allText.includes('榜单')) return;
-
-      const records = getSpecialRecords();
-      
-      records.forEach(record => {
-        const allElements = document.querySelectorAll('body *');
-        allElements.forEach(el => {
-          if (el.textContent.trim() === record.title && el.children.length === 0) {
-            const parent = el.closest('.mc-card, [class*="card"], [class*="item"], [class*="record"], tr, [class*="row"]');
-            if (parent && !parent.querySelector('.admin-sr-btns')) {
-              const btnContainer = document.createElement('div');
-              btnContainer.className = 'admin-sr-btns';
-              btnContainer.style.cssText = 'display:flex;gap:6px;margin-top:8px;';
-              
-              const editBtn = createEditButton('编辑', function() {
-                openSpecialRecordEditModal(record);
-              });
-              
-              const deleteBtn = createDeleteButton(function() {
-                if (confirm('确定要删除这条特殊记录吗？')) {
-                  deleteSpecialRecord(record.id);
-                  setTimeout(refreshPage, 100);
-                }
-              });
-              
-              btnContainer.appendChild(editBtn);
-              btnContainer.appendChild(deleteBtn);
-              parent.appendChild(btnContainer);
-              parent.classList.add('admin-sr-enhanced');
-            }
+          if (foundMember) {
+            addButtonToCard(card, foundMember);
           }
-        });
-      });
-
-      const headings = document.querySelectorAll('h1, h2');
-      headings.forEach(heading => {
-        const headingText = heading.textContent;
-        if ((headingText.includes('特殊') || headingText.includes('成就') || headingText.includes('榜单')) 
-            && !document.querySelector('.admin-add-sr-btn')) {
-          const addBtn = createEditButton('+ 添加记录', openAddSpecialRecordModal);
-          addBtn.className = 'admin-add-sr-btn';
-          addBtn.style.cssText = 'padding:8px 16px;font-size:13px;';
-          heading.parentElement.style.position = 'relative';
-          heading.parentElement.appendChild(addBtn);
+          return;
+        }
+        
+        const href = link.getAttribute('href') || link.getAttribute('to') || '';
+        const match = href.match(/\/members\/([^/?#]+)/);
+        if (match) {
+          const memberId = match[1];
+          const member = findMemberById(memberId);
+          if (member) {
+            addButtonToCard(card, member);
+          }
         }
       });
     };
 
-    setTimeout(addButtons, 800);
-    setTimeout(addButtons, 2000);
+    function addButtonToCard(card, member) {
+      const btn = document.createElement('button');
+      btn.className = 'admin-edit-score-btn';
+      btn.style.cssText = 'margin-top:8px;padding:8px 14px;font-size:13px;font-weight:500;color:#4ade80;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:8px;cursor:pointer;transition:all 0.2s;width:100%;';
+      btn.textContent = '📝 编辑积分';
+      btn.addEventListener('mouseenter', function() {
+        this.style.background = 'rgba(74,222,128,0.2)';
+      });
+      btn.addEventListener('mouseleave', function() {
+        this.style.background = 'rgba(74,222,128,0.1)';
+      });
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openScoreEditModal(member);
+      });
+      card.appendChild(btn);
+    }
+
+    setTimeout(addEditButtons, 600);
+    setTimeout(addEditButtons, 1500);
+    setTimeout(addEditButtons, 3000);
     
     const observer = new MutationObserver(function() {
-      clearTimeout(window._srEnhanceTimer);
-      window._srEnhanceTimer = setTimeout(addButtons, 500);
+      clearTimeout(window._scoreObsTimer);
+      window._scoreObsTimer = setTimeout(addEditButtons, 400);
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
   function enhanceMembersPage() {
+    const pageKey = 'members-enhanced';
+    if (document.body.dataset[pageKey]) return;
+    document.body.dataset[pageKey] = 'true';
+
     const addScoreInfo = function() {
-      if (document.querySelector('.admin-member-enhanced')) return;
-
-      const allText = document.body.innerText;
-      if (!allText.includes('成员') && !allText.includes('成员库')) return;
-
+      const memberCards = document.querySelectorAll('[class*="bg-gradient"], .mc-card, [class*="from-white"]');
       const members = getMembers();
       
-      members.forEach(member => {
+      memberCards.forEach(card => {
+        if (card.querySelector('.admin-score-badge-display')) return;
+        
+        const link = card.querySelector('a[href*="/members/"], [to*="/members/"]');
+        if (!link) return;
+        
+        const href = link.getAttribute('href') || link.getAttribute('to') || '';
+        const match = href.match(/\/members\/([^/?#]+)/);
+        if (!match) return;
+        
+        const memberId = match[1];
+        const member = findMemberById(memberId);
+        if (!member) return;
+        
         const score = calculateMemberPoints(member.id);
-        const allElements = document.querySelectorAll('body *');
-        allElements.forEach(el => {
-          if (el.textContent.trim() === member.nickname && el.children.length === 0) {
-            const parent = el.closest('.mc-card, [class*="card"], [class*="item"], [class*="member"], tr, [class*="row"]');
-            if (parent && !parent.querySelector('.admin-score-badge')) {
-              const badge = document.createElement('div');
-              badge.className = 'admin-score-badge';
-              badge.innerHTML = `⭐ ${score} 积分`;
-              
-              const nameEl = parent.querySelector('[class*="name"], h3, h4, strong');
-              if (nameEl) {
-                nameEl.parentNode.insertBefore(badge, nameEl.nextSibling);
-              } else {
-                el.parentNode.insertBefore(badge, el.nextSibling);
-              }
-              
-              if (isAdmin()) {
-                const editBtn = createEditButton('调整积分', function() {
-                  openScoreEditModal(member);
-                });
-                editBtn.style.marginTop = '8px';
-                parent.appendChild(editBtn);
-              }
-              
-              parent.classList.add('admin-member-enhanced');
-            }
-          }
-        });
+        
+        const badge = document.createElement('div');
+        badge.className = 'admin-score-badge admin-score-badge-display';
+        badge.innerHTML = `⭐ ${score} 积分`;
+        
+        const nameEl = card.querySelector('h3, h4, [class*="font-bold"], [class*="font-semibold"]');
+        if (nameEl && nameEl.textContent.trim() === member.nickname) {
+          nameEl.parentNode.insertBefore(badge, nameEl.nextSibling);
+          badge.style.marginTop = '4px';
+        } else {
+          card.appendChild(badge);
+          badge.style.marginTop = '8px';
+        }
+        
+        if (isAdmin()) {
+          const editBtn = document.createElement('button');
+          editBtn.style.cssText = 'margin-top:8px;padding:8px 14px;font-size:12px;font-weight:500;color:#4ade80;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:8px;cursor:pointer;transition:all 0.2s;width:100%;';
+          editBtn.textContent = '🔧 调整积分';
+          editBtn.addEventListener('mouseenter', function() {
+            this.style.background = 'rgba(74,222,128,0.2)';
+          });
+          editBtn.addEventListener('mouseleave', function() {
+            this.style.background = 'rgba(74,222,128,0.1)';
+          });
+          editBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            openScoreEditModal(member);
+          });
+          card.appendChild(editBtn);
+        }
       });
     };
 
-    setTimeout(addScoreInfo, 800);
-    setTimeout(addScoreInfo, 2000);
+    setTimeout(addScoreInfo, 600);
+    setTimeout(addScoreInfo, 1500);
+    setTimeout(addScoreInfo, 3000);
     
     const observer = new MutationObserver(function() {
-      clearTimeout(window._memberEnhanceTimer);
-      window._memberEnhanceTimer = setTimeout(addScoreInfo, 500);
+      clearTimeout(window._memberObsTimer);
+      window._memberObsTimer = setTimeout(addScoreInfo, 400);
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
   function enhanceMemberDetailPage() {
-    const addScoreInfo = function() {
-      if (document.querySelector('.admin-detail-enhanced')) return;
+    const pageKey = 'detail-enhanced';
+    if (document.body.dataset[pageKey]) return;
+    document.body.dataset[pageKey] = 'true';
 
+    const addScoreInfo = function() {
       const pathParts = getCurrentPath().split('/');
       const memberId = pathParts[pathParts.length - 1];
       if (!memberId || memberId === 'members') return;
 
-      const member = getMembers().find(m => m.id === memberId);
-      if (!member) {
-        const nickname = document.querySelector('h1, h2, [class*="name"]');
-        if (nickname) {
-          const found = findMemberByName(nickname.textContent.trim());
-          if (found) return enhanceDetailWithMember(found);
-        }
-        return;
-      }
+      const member = findMemberById(memberId);
+      if (!member) return;
 
-      enhanceDetailWithMember(member);
-    };
+      if (document.querySelector('.admin-detail-score-box')) return;
 
-    function enhanceDetailWithMember(member) {
       const score = calculateMemberPoints(member.id);
       
-      const infoSections = document.querySelectorAll('[class*="info"], [class*="detail"], [class*="profile"], .mc-card');
-      infoSections.forEach(section => {
-        if (section.querySelector('.admin-detail-score')) return;
-        
-        const scoreInfo = document.createElement('div');
-        scoreInfo.className = 'admin-detail-score';
-        scoreInfo.style.cssText = 'margin-top:16px;padding:16px;background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.2);border-radius:12px;';
-        scoreInfo.innerHTML = `
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">总积分</div>
-              <div style="font-size:24px;font-weight:700;color:#fbbf24;">⭐ ${score}</div>
-            </div>
-            ${isAdmin() ? '<button class="admin-edit-score-btn" style="padding:8px 16px;font-size:12px;font-weight:500;color:#4ade80;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:8px;cursor:pointer;">调整积分</button>' : ''}
-          </div>
-        `;
-        
-        section.appendChild(scoreInfo);
-        section.classList.add('admin-detail-enhanced');
-
-        const editBtn = scoreInfo.querySelector('.admin-edit-score-btn');
-        if (editBtn) {
-          editBtn.addEventListener('click', function() {
-            openScoreEditModal(member);
-          });
+      const containers = document.querySelectorAll('[class*="bg-white"], .mc-card, [class*="p-6"], [class*="p-8"]');
+      let targetContainer = null;
+      
+      for (const container of containers) {
+        if (container.textContent.includes(member.nickname) && container.children.length >= 2) {
+          targetContainer = container;
+          break;
         }
-      });
-    }
+      }
+      
+      if (!targetContainer) {
+        targetContainer = document.querySelector('.mc-card') || document.querySelector('[class*="p-6"]');
+      }
+      
+      if (!targetContainer) return;
 
-    setTimeout(addScoreInfo, 800);
-    setTimeout(addScoreInfo, 2000);
+      const scoreBox = document.createElement('div');
+      scoreBox.className = 'admin-detail-score-box';
+      scoreBox.style.cssText = 'margin-top:16px;padding:18px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:12px;';
+      scoreBox.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">🎯 总积分</div>
+            <div style="font-size:26px;font-weight:700;color:#fbbf24;">⭐ ${score}</div>
+          </div>
+          ${isAdmin() ? '<button class="admin-detail-edit-btn" style="padding:10px 16px;font-size:13px;font-weight:600;color:#fff;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;border-radius:10px;cursor:pointer;">调整积分</button>' : ''}
+        </div>
+      `;
+      
+      targetContainer.appendChild(scoreBox);
+
+      const editBtn = scoreBox.querySelector('.admin-detail-edit-btn');
+      if (editBtn) {
+        editBtn.addEventListener('click', function() {
+          openScoreEditModal(member);
+        });
+      }
+    };
+
+    setTimeout(addScoreInfo, 600);
+    setTimeout(addScoreInfo, 1500);
+    setTimeout(addScoreInfo, 3000);
     
     const observer = new MutationObserver(function() {
-      clearTimeout(window._detailEnhanceTimer);
-      window._detailEnhanceTimer = setTimeout(addScoreInfo, 500);
+      clearTimeout(window._detailObsTimer);
+      window._detailObsTimer = setTimeout(addScoreInfo, 400);
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  function addAdminFloatButton() {
+  function createFloatPanel() {
     if (!isAdmin()) return;
-    if (document.querySelector('.admin-float-btn')) return;
+    if (document.querySelector('.admin-float-panel')) return;
 
-    const btn = document.createElement('button');
-    btn.className = 'admin-float-btn';
-    btn.textContent = '⚙️ 管理员工具';
-    btn.title = '点击查看管理员可用功能';
+    const panel = document.createElement('div');
+    panel.className = 'admin-float-panel';
+    panel.innerHTML = `
+      <div class="admin-quick-panel" id="admin-quick-panel">
+        <div class="admin-quick-item" data-action="scoreboard">
+          📊 积分榜管理
+        </div>
+        <div class="admin-quick-item" data-action="members">
+          👥 成员库管理
+        </div>
+        <div class="admin-quick-item" data-action="special">
+          🏆 特殊榜单管理
+        </div>
+        <div class="admin-quick-divider"></div>
+        <div class="admin-quick-item" data-action="quick-adjust">
+          ⚡ 快速调整积分
+        </div>
+        <div class="admin-quick-item" data-action="refresh">
+          🔄 刷新页面
+        </div>
+      </div>
+      <button class="admin-float-btn" id="admin-float-btn">⚙️ 管理员</button>
+    `;
     
-    btn.addEventListener('click', function() {
-      const path = getCurrentPath();
-      let hint = '当前页面管理员功能：\n\n';
-      
-      if (path.includes('/scoreboard')) {
-        hint += '📊 积分榜：鼠标悬停在玩家卡片上，点击"编辑积分"按钮可调整积分';
-      } else if (path.includes('/special-records')) {
-        hint += '🏆 特殊榜单：点击记录上的"编辑"按钮可修改，点击"+ 添加记录"可新增';
-      } else if (path.includes('/members/')) {
-        hint += '👤 成员详情：页面中有"调整积分"按钮可直接修改该成员积分';
-      } else if (path.includes('/members')) {
-        hint += '👥 成员库：每个成员卡片显示积分，管理员可点击"调整积分"按钮';
-      } else {
-        hint += '请前往积分榜、特殊榜单或成员库页面使用管理员编辑功能';
-      }
-      
-      alert(hint);
+    document.body.appendChild(panel);
+
+    const floatBtn = panel.querySelector('#admin-float-btn');
+    const quickPanel = panel.querySelector('#admin-quick-panel');
+    
+    floatBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      quickPanel.classList.toggle('show');
+    });
+
+    document.addEventListener('click', function() {
+      quickPanel.classList.remove('show');
     });
     
-    document.body.appendChild(btn);
+    quickPanel.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+
+    quickPanel.querySelectorAll('.admin-quick-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const action = this.dataset.action;
+        quickPanel.classList.remove('show');
+        
+        switch(action) {
+          case 'scoreboard':
+            if (window.location.pathname.includes('/scoreboard')) {
+              alert('当前就在积分榜页面，滚动查看各玩家编辑按钮');
+            } else {
+              window.location.href = BASE + 'scoreboard';
+            }
+            break;
+          case 'members':
+            if (window.location.pathname.includes('/members')) {
+              alert('当前就在成员库页面，各成员卡片有积分显示和调整按钮');
+            } else {
+              window.location.href = BASE + 'members';
+            }
+            break;
+          case 'special':
+            if (window.location.pathname.includes('/special-records')) {
+              alert('当前就在特殊榜单页面，使用页面自带的添加/删除功能');
+            } else {
+              window.location.href = BASE + 'special-records';
+            }
+            break;
+          case 'quick-adjust':
+            openMemberSelectModal('选择要调整积分的成员', function(member) {
+              openScoreEditModal(member);
+            });
+            break;
+          case 'refresh':
+            window.location.reload();
+            break;
+        }
+      });
+    });
   }
 
   function initPageEnhancements() {
@@ -739,21 +665,23 @@
 
     if (path.includes('/scoreboard')) {
       enhanceScoreboardPage();
-    } else if (path.includes('/special-records')) {
-      enhanceSpecialRecordsPage();
     } else if (path.includes('/members/')) {
       enhanceMemberDetailPage();
     } else if (path.includes('/members')) {
       enhanceMembersPage();
     }
     
-    addAdminFloatButton();
+    createFloatPanel();
   }
 
   function init() {
     injectGlobalStyles();
 
-    initPageEnhancements();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPageEnhancements);
+    } else {
+      initPageEnhancements();
+    }
 
     let lastPath = getCurrentPath();
     setInterval(function() {
@@ -761,20 +689,25 @@
       if (currentPath !== lastPath) {
         lastPath = currentPath;
         
-        document.querySelectorAll('.admin-score-enhanced, .admin-sr-enhanced, .admin-member-enhanced, .admin-detail-enhanced, .admin-float-btn, .admin-add-sr-btn').forEach(el => {
-          el.classList.remove('admin-score-enhanced', 'admin-sr-enhanced', 'admin-member-enhanced', 'admin-detail-enhanced');
+        const panel = document.querySelector('.admin-float-panel');
+        if (panel) panel.remove();
+        
+        Object.keys(document.body.dataset).forEach(key => {
+          if (key.endsWith('Enhanced') || key.endsWith('-enhanced')) {
+            delete document.body.dataset[key];
+          }
         });
-        const floatBtn = document.querySelector('.admin-float-btn');
-        if (floatBtn) floatBtn.remove();
-        const addBtn = document.querySelector('.admin-add-sr-btn');
-        if (addBtn) addBtn.remove();
+        document.body.removeAttribute('data-scoreboard-enhanced');
+        document.body.removeAttribute('data-members-enhanced');
+        document.body.removeAttribute('data-detail-enhanced');
         
         initPageEnhancements();
       }
     }, 500);
 
     console.log('%c⚡ 管理员扩展已加载', 'color: #4ade80; font-weight: bold; font-size: 14px;');
-    console.log('%c当前用户角色: ' + (isAdmin() ? '管理员' : '普通用户'), 'color: ' + (isAdmin() ? '#4ade80' : '#fbbf24') + '; font-weight: 500;');
+    console.log('%c当前用户: ' + (getCurrentUser()?.nickname || '未登录') + ' | 角色: ' + (isAdmin() ? '管理员' : '普通用户'), 'color: ' + (isAdmin() ? '#4ade80' : '#fbbf24') + '; font-weight: 500;');
+    console.log('%c右下角有「⚙️ 管理员」浮动按钮，点击查看可用功能', 'color: rgba(255,255,255,0.6); font-size: 12px;');
   }
 
   if (document.readyState === 'loading') {
@@ -794,12 +727,9 @@
     updateScoreRecord,
     deleteScoreRecord,
     adjustMemberPoints,
-    updateSpecialRecord,
-    deleteSpecialRecord,
-    addSpecialRecord,
     openScoreEditModal,
-    openSpecialRecordEditModal,
-    refreshPage
+    openMemberSelectModal,
+    refreshPage: () => window.location.reload()
   };
 
 })();
