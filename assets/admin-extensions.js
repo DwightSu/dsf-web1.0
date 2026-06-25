@@ -3,6 +3,7 @@
 
   const BASE = '/dsf-web1.0/';
   const STORAGE_PREFIX = 'mc_activity_';
+  const CURRENT_USER_KEY = 'mc_current_user';
 
   function getStore(key) {
     try {
@@ -35,7 +36,7 @@
 
   function getCurrentUser() {
     try {
-      const userData = localStorage.getItem('mc_activity_user');
+      const userData = localStorage.getItem(CURRENT_USER_KEY);
       return userData ? JSON.parse(userData) : null;
     } catch(e) {
       return null;
@@ -212,6 +213,8 @@
       .admin-score-row-actions { display:flex;gap:6px; }
       .admin-empty { text-align:center;padding:30px;color:rgba(255,255,255,0.4);font-size:14px; }
       .admin-member-card-score { display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08); }
+      .admin-float-btn { position:fixed;bottom:20px;right:20px;z-index:1000;padding:12px 20px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(34,197,94,0.4);transition:all 0.2s; }
+      .admin-float-btn:hover { transform:translateY(-2px);box-shadow:0 6px 16px rgba(34,197,94,0.5); }
     `;
     document.head.appendChild(style);
   }
@@ -256,9 +259,9 @@
       </div>
       <div style="margin-bottom:16px;">
         <label class="admin-label">快速调整积分</label>
-        <div style="display:flex;gap:10px;">
-          <input type="number" id="quick-points" class="admin-input" placeholder="输入积分数值（正数加分，负数扣分）" style="flex:1;" />
-          <input type="text" id="quick-reason" class="admin-input" placeholder="调整原因" style="flex:1;" />
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <input type="number" id="quick-points" class="admin-input" placeholder="积分数值（正加负扣）" style="flex:1;min-width:120px;" />
+          <input type="text" id="quick-reason" class="admin-input" placeholder="调整原因" style="flex:1;min-width:120px;" />
           <button id="quick-add-btn" class="admin-btn-primary">调整</button>
         </div>
       </div>
@@ -467,46 +470,55 @@
     window.location.reload();
   }
 
+  function getCurrentPath() {
+    let path = window.location.pathname;
+    if (path.startsWith(BASE)) {
+      path = path.slice(BASE.length - 1);
+    }
+    return path;
+  }
+
+  function findMemberByName(nickname) {
+    const members = getMembers();
+    return members.find(m => m.nickname === nickname);
+  }
+
   function enhanceScoreboardPage() {
     if (!isAdmin()) return;
     
     const checkAndEnhance = function() {
-      const scoreRows = document.querySelectorAll('[class*="scoreboard"], [class*="score"], table tr');
-      
-      const members = getScoreboardMembers();
-      
+      if (document.querySelector('.admin-score-enhanced')) return;
+
       const allText = document.body.innerText;
       if (!allText.includes('积分') && !allText.includes('排行榜')) return;
 
-      if (document.querySelector('.admin-score-enhanced')) return;
-
-      const cards = document.querySelectorAll('[class*="mc-card"], [class*="score-item"], [class*="rank-item"], tr');
+      const members = getScoreboardMembers();
+      const rows = document.querySelectorAll('.mc-card [class*="score"], .mc-card tr, [class*="rank-item"], [class*="score-item"]');
       
-      members.forEach((member, index) => {
-        setTimeout(() => {
-          const elements = document.querySelectorAll('*');
-          elements.forEach(el => {
-            if (el.textContent.trim() === member.nickname && el.children.length === 0) {
-              const parent = el.closest('[class*="card"], [class*="item"], tr, [class*="row"]');
-              if (parent && !parent.querySelector('.admin-edit-btn')) {
-                const btn = createEditButton('编辑积分', function() {
-                  openScoreEditModal(member);
-                });
-                parent.appendChild(btn);
-                parent.classList.add('admin-score-enhanced');
-              }
+      members.forEach(member => {
+        const allElements = document.querySelectorAll('body *');
+        allElements.forEach(el => {
+          if (el.textContent.trim() === member.nickname && el.children.length === 0) {
+            const parent = el.closest('.mc-card, [class*="card"], [class*="item"], tr, [class*="row"], [class*="scoreboard"]');
+            if (parent && !parent.querySelector('.admin-edit-btn')) {
+              const btn = createEditButton('编辑积分', function() {
+                openScoreEditModal(member);
+              });
+              btn.style.marginTop = '8px';
+              parent.appendChild(btn);
+              parent.classList.add('admin-score-enhanced');
             }
-          });
-        }, index * 50);
+          }
+        });
       });
     };
 
-    setTimeout(checkAndEnhance, 500);
-    setTimeout(checkAndEnhance, 1500);
+    setTimeout(checkAndEnhance, 800);
+    setTimeout(checkAndEnhance, 2000);
     
     const observer = new MutationObserver(function() {
       clearTimeout(window._scoreEnhanceTimer);
-      window._scoreEnhanceTimer = setTimeout(checkAndEnhance, 300);
+      window._scoreEnhanceTimer = setTimeout(checkAndEnhance, 500);
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
@@ -518,15 +530,15 @@
       if (document.querySelector('.admin-sr-enhanced')) return;
 
       const allText = document.body.innerText;
-      if (!allText.includes('特殊') && !allText.includes('成就')) return;
+      if (!allText.includes('特殊') && !allText.includes('成就') && !allText.includes('榜单')) return;
 
       const records = getSpecialRecords();
       
       records.forEach(record => {
-        const elements = document.querySelectorAll('*');
-        elements.forEach(el => {
+        const allElements = document.querySelectorAll('body *');
+        allElements.forEach(el => {
           if (el.textContent.trim() === record.title && el.children.length === 0) {
-            const parent = el.closest('[class*="card"], [class*="item"], [class*="record"], tr, [class*="row"]');
+            const parent = el.closest('.mc-card, [class*="card"], [class*="item"], [class*="record"], tr, [class*="row"]');
             if (parent && !parent.querySelector('.admin-sr-btns')) {
               const btnContainer = document.createElement('div');
               btnContainer.className = 'admin-sr-btns';
@@ -552,21 +564,26 @@
         });
       });
 
-      const pageTitle = document.querySelector('h1, h2');
-      if (pageTitle && !document.querySelector('.admin-add-sr-btn')) {
-        const addBtn = createEditButton('+ 添加记录', openAddSpecialRecordModal);
-        addBtn.className = 'admin-add-sr-btn';
-        addBtn.style.cssText = 'padding:8px 16px;font-size:13px;';
-        pageTitle.parentElement.appendChild(addBtn);
-      }
+      const headings = document.querySelectorAll('h1, h2');
+      headings.forEach(heading => {
+        const headingText = heading.textContent;
+        if ((headingText.includes('特殊') || headingText.includes('成就') || headingText.includes('榜单')) 
+            && !document.querySelector('.admin-add-sr-btn')) {
+          const addBtn = createEditButton('+ 添加记录', openAddSpecialRecordModal);
+          addBtn.className = 'admin-add-sr-btn';
+          addBtn.style.cssText = 'padding:8px 16px;font-size:13px;';
+          heading.parentElement.style.position = 'relative';
+          heading.parentElement.appendChild(addBtn);
+        }
+      });
     };
 
-    setTimeout(addButtons, 500);
-    setTimeout(addButtons, 1500);
+    setTimeout(addButtons, 800);
+    setTimeout(addButtons, 2000);
     
     const observer = new MutationObserver(function() {
       clearTimeout(window._srEnhanceTimer);
-      window._srEnhanceTimer = setTimeout(addButtons, 300);
+      window._srEnhanceTimer = setTimeout(addButtons, 500);
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
@@ -582,10 +599,10 @@
       
       members.forEach(member => {
         const score = calculateMemberPoints(member.id);
-        const elements = document.querySelectorAll('*');
-        elements.forEach(el => {
+        const allElements = document.querySelectorAll('body *');
+        allElements.forEach(el => {
           if (el.textContent.trim() === member.nickname && el.children.length === 0) {
-            const parent = el.closest('[class*="card"], [class*="item"], [class*="member"], tr, [class*="row"]');
+            const parent = el.closest('.mc-card, [class*="card"], [class*="item"], [class*="member"], tr, [class*="row"]');
             if (parent && !parent.querySelector('.admin-score-badge')) {
               const badge = document.createElement('div');
               badge.className = 'admin-score-badge';
@@ -613,12 +630,12 @@
       });
     };
 
-    setTimeout(addScoreInfo, 500);
-    setTimeout(addScoreInfo, 1500);
+    setTimeout(addScoreInfo, 800);
+    setTimeout(addScoreInfo, 2000);
     
     const observer = new MutationObserver(function() {
       clearTimeout(window._memberEnhanceTimer);
-      window._memberEnhanceTimer = setTimeout(addScoreInfo, 300);
+      window._memberEnhanceTimer = setTimeout(addScoreInfo, 500);
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
@@ -627,16 +644,27 @@
     const addScoreInfo = function() {
       if (document.querySelector('.admin-detail-enhanced')) return;
 
-      const pathParts = window.location.pathname.split('/');
+      const pathParts = getCurrentPath().split('/');
       const memberId = pathParts[pathParts.length - 1];
       if (!memberId || memberId === 'members') return;
 
       const member = getMembers().find(m => m.id === memberId);
-      if (!member) return;
+      if (!member) {
+        const nickname = document.querySelector('h1, h2, [class*="name"]');
+        if (nickname) {
+          const found = findMemberByName(nickname.textContent.trim());
+          if (found) return enhanceDetailWithMember(found);
+        }
+        return;
+      }
 
+      enhanceDetailWithMember(member);
+    };
+
+    function enhanceDetailWithMember(member) {
       const score = calculateMemberPoints(member.id);
       
-      const infoSections = document.querySelectorAll('[class*="info"], [class*="detail"], [class*="profile"]');
+      const infoSections = document.querySelectorAll('[class*="info"], [class*="detail"], [class*="profile"], .mc-card');
       infoSections.forEach(section => {
         if (section.querySelector('.admin-detail-score')) return;
         
@@ -663,22 +691,51 @@
           });
         }
       });
-    };
+    }
 
-    setTimeout(addScoreInfo, 500);
-    setTimeout(addScoreInfo, 1500);
+    setTimeout(addScoreInfo, 800);
+    setTimeout(addScoreInfo, 2000);
     
     const observer = new MutationObserver(function() {
       clearTimeout(window._detailEnhanceTimer);
-      window._detailEnhanceTimer = setTimeout(addScoreInfo, 300);
+      window._detailEnhanceTimer = setTimeout(addScoreInfo, 500);
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  function init() {
-    injectGlobalStyles();
+  function addAdminFloatButton() {
+    if (!isAdmin()) return;
+    if (document.querySelector('.admin-float-btn')) return;
 
-    const path = window.location.pathname;
+    const btn = document.createElement('button');
+    btn.className = 'admin-float-btn';
+    btn.textContent = '⚙️ 管理员工具';
+    btn.title = '点击查看管理员可用功能';
+    
+    btn.addEventListener('click', function() {
+      const path = getCurrentPath();
+      let hint = '当前页面管理员功能：\n\n';
+      
+      if (path.includes('/scoreboard')) {
+        hint += '📊 积分榜：鼠标悬停在玩家卡片上，点击"编辑积分"按钮可调整积分';
+      } else if (path.includes('/special-records')) {
+        hint += '🏆 特殊榜单：点击记录上的"编辑"按钮可修改，点击"+ 添加记录"可新增';
+      } else if (path.includes('/members/')) {
+        hint += '👤 成员详情：页面中有"调整积分"按钮可直接修改该成员积分';
+      } else if (path.includes('/members')) {
+        hint += '👥 成员库：每个成员卡片显示积分，管理员可点击"调整积分"按钮';
+      } else {
+        hint += '请前往积分榜、特殊榜单或成员库页面使用管理员编辑功能';
+      }
+      
+      alert(hint);
+    });
+    
+    document.body.appendChild(btn);
+  }
+
+  function initPageEnhancements() {
+    const path = getCurrentPath();
 
     if (path.includes('/scoreboard')) {
       enhanceScoreboardPage();
@@ -689,23 +746,35 @@
     } else if (path.includes('/members')) {
       enhanceMembersPage();
     }
+    
+    addAdminFloatButton();
+  }
 
-    let lastPath = window.location.pathname;
+  function init() {
+    injectGlobalStyles();
+
+    initPageEnhancements();
+
+    let lastPath = getCurrentPath();
     setInterval(function() {
-      const currentPath = window.location.pathname;
+      const currentPath = getCurrentPath();
       if (currentPath !== lastPath) {
         lastPath = currentPath;
-        if (currentPath.includes('/scoreboard')) {
-          enhanceScoreboardPage();
-        } else if (currentPath.includes('/special-records')) {
-          enhanceSpecialRecordsPage();
-        } else if (currentPath.includes('/members/')) {
-          enhanceMemberDetailPage();
-        } else if (currentPath.includes('/members')) {
-          enhanceMembersPage();
-        }
+        
+        document.querySelectorAll('.admin-score-enhanced, .admin-sr-enhanced, .admin-member-enhanced, .admin-detail-enhanced, .admin-float-btn, .admin-add-sr-btn').forEach(el => {
+          el.classList.remove('admin-score-enhanced', 'admin-sr-enhanced', 'admin-member-enhanced', 'admin-detail-enhanced');
+        });
+        const floatBtn = document.querySelector('.admin-float-btn');
+        if (floatBtn) floatBtn.remove();
+        const addBtn = document.querySelector('.admin-add-sr-btn');
+        if (addBtn) addBtn.remove();
+        
+        initPageEnhancements();
       }
     }, 500);
+
+    console.log('%c⚡ 管理员扩展已加载', 'color: #4ade80; font-weight: bold; font-size: 14px;');
+    console.log('%c当前用户角色: ' + (isAdmin() ? '管理员' : '普通用户'), 'color: ' + (isAdmin() ? '#4ade80' : '#fbbf24') + '; font-weight: 500;');
   }
 
   if (document.readyState === 'loading') {
@@ -719,6 +788,7 @@
     getMembers,
     getScoreRecords,
     getSpecialRecords,
+    getCurrentUser,
     calculateMemberPoints,
     addScoreRecord,
     updateScoreRecord,
