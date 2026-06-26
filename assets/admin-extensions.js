@@ -108,7 +108,7 @@
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;padding:16px;backdrop-filter:blur(4px);';
     
     const modal = document.createElement('div');
-    modal.style.cssText = 'background:#1a1d23;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+    modal.style.cssText = 'background:#1a1d23;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
     modal.innerHTML = contentHtml;
     
     overlay.appendChild(modal);
@@ -142,45 +142,32 @@
       .admin-btn-primary:hover { transform:translateY(-1px);box-shadow:0 4px 12px rgba(34,197,94,0.4); }
       .admin-btn-secondary { padding:10px 20px;font-size:14px;font-weight:500;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;transition:all 0.2s; }
       .admin-btn-secondary:hover { background:rgba(255,255,255,0.1); }
-      .admin-btn-danger { padding:10px 20px;font-size:14px;font-weight:600;color:#fff;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;border-radius:10px;cursor:pointer;transition:all 0.2s; }
-      .admin-btn-danger:hover { transform:translateY(-1px);box-shadow:0 4px 12px rgba(239,68,68,0.4); }
-      .admin-score-row { display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:8px; }
+      .admin-score-card { background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;text-align:center;margin-bottom:16px; }
+      .admin-score-card-label { font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px; }
+      .admin-score-card-value { font-size:36px;font-weight:700;color:#fbbf24; }
+      .admin-adjust-panel { margin-top:16px; }
+      .admin-adjust-row { display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end; }
+      .admin-adjust-row > div { flex:1;min-width:140px; }
+      .admin-adjust-info { font-size:12px;color:rgba(255,255,255,0.5);text-align:center;margin-top:8px; }
+      .admin-score-row { display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:6px; }
       .admin-score-row-info { flex:1;min-width:0; }
-      .admin-score-row-name { font-size:14px;font-weight:500;color:#fff;margin-bottom:2px; }
-      .admin-score-row-reason { font-size:12px;color:rgba(255,255,255,0.5); }
-      .admin-score-row-points { font-size:16px;font-weight:700;margin-right:12px;min-width:60px;text-align:right;flex-shrink:0; }
+      .admin-score-row-name { font-size:13px;font-weight:500;color:#fff;margin-bottom:2px; }
+      .admin-score-row-reason { font-size:11px;color:rgba(255,255,255,0.5); }
+      .admin-score-row-points { font-size:14px;font-weight:700;margin-right:10px;min-width:50px;text-align:right;flex-shrink:0; }
       .admin-score-row-points.positive { color:#4ade80; }
       .admin-score-row-points.negative { color:#f87171; }
-      .admin-score-row-actions { display:flex;gap:6px;flex-shrink:0; }
-      .admin-empty { text-align:center;padding:30px;color:rgba(255,255,255,0.4);font-size:14px; }
-      .admin-score-badge { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;font-size:12px;font-weight:600;color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:9999px; }
-      .admin-member-item { padding:12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.15s; }
-      .admin-member-item:hover { background:rgba(255,255,255,0.05); }
-      .admin-member-avatar { width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;flex-shrink:0; }
-      .admin-member-info { flex:1;min-width:0; }
-      .admin-member-name { color:#fff;font-weight:500;font-size:14px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-      .admin-member-score { font-size:12px;color:rgba(255,255,255,0.5); }
-      .admin-member-action { flex-shrink:0; }
-      .admin-score-total-card { background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px;text-align:center;margin-bottom:16px; }
-      .admin-score-total-label { font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px; }
-      .admin-score-total-value { font-size:28px;font-weight:700;color:#fbbf24; }
+      .admin-score-row-actions { display:flex;gap:4px;flex-shrink:0; }
+      .admin-empty { text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px; }
       .admin-ban-btn { display:inline-flex;align-items:center;gap:6px;padding:8px 14px;font-size:13px;font-weight:500;color:#f87171;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:8px;cursor:pointer;transition:all 0.2s;text-decoration:none;flex-shrink:0; }
       .admin-ban-btn:hover { background:rgba(248,113,113,0.2);border-color:rgba(248,113,113,0.5); }
-      .admin-section { margin-bottom:24px; }
-      .admin-section-title { font-size:16px;font-weight:600;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:8px; }
-      .admin-points-adjust-card { background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px; }
-      .admin-quick-adjust-row { display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end; }
-      .admin-quick-adjust-row .admin-input-group { flex:1;min-width:120px; }
-      .admin-score-manage-section { margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1); }
-      .admin-score-manage-btn { width:100%;padding:10px;font-size:13px;background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:8px;cursor:pointer;transition:all 0.2s; }
-      .admin-score-manage-btn:hover { background:rgba(74,222,128,0.2); }
-      .admin-user-score-info { display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:10px;margin-bottom:12px; }
-      .admin-user-score-avatar { width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;flex-shrink:0;font-size:14px; }
-      .admin-user-score-detail { flex:1;min-width:0; }
-      .admin-user-score-name { color:#fff;font-weight:500;font-size:14px; }
-      .admin-user-score-value { color:#fbbf24;font-size:12px;font-weight:600; }
-      @keyframes admin-fade-in { from { opacity:0;transform:translateY(-10px);} to { opacity:1;transform:translateY(0);} }
-      .admin-animate-in { animation:admin-fade-in 0.3s ease; }
+      .admin-score-cell { font-weight:600; }
+      .admin-score-cell.positive { color:#16a34a; }
+      .admin-score-cell.negative { color:#dc2626; }
+      .admin-score-cell.zero { color:#9ca3af; }
+      .admin-adjust-btn { padding:4px 10px;font-size:12px;font-weight:500;color:#fff;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:6px;cursor:pointer;transition:all 0.2s;white-space:nowrap; }
+      .admin-adjust-btn:hover { transform:translateY(-1px);box-shadow:0 2px 8px rgba(245,158,11,0.4); }
+      @keyframes admin-fade-in { from { opacity:0;transform:translateY(-6px);} to { opacity:1;transform:translateY(0);} }
+      .admin-animate-in { animation:admin-fade-in 0.2s ease; }
     `;
     document.head.appendChild(style);
   }
@@ -193,18 +180,21 @@
     return path;
   }
 
-  function findMemberById(memberId) {
-    return getMembers().find(m => m.id === memberId);
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
-  function openScoreEditModal(member, onClose) {
+  function openScoreAdjustModal(member, onClose) {
+    const currentPoints = calculateMemberPoints(member.id);
     const records = getScoreRecords().filter(r => r.member_id === member.id);
-    
+
     let recordsHtml = '';
     if (records.length === 0) {
       recordsHtml = '<div class="admin-empty">暂无积分记录</div>';
     } else {
-      recordsHtml = records.map(r => `
+      recordsHtml = records.slice(0, 10).map(r => `
         <div class="admin-score-row" data-id="${r.id}">
           <div class="admin-score-row-info">
             <div class="admin-score-row-name">${escapeHtml(r.reason || '未命名记录')}</div>
@@ -212,66 +202,125 @@
           </div>
           <span class="admin-score-row-points ${r.points >= 0 ? 'positive' : 'negative'}">${r.points >= 0 ? '+' : ''}${r.points}</span>
           <div class="admin-score-row-actions">
-            <button class="admin-edit-record-btn" data-id="${r.id}" style="padding:5px 10px;font-size:11px;background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;">编辑</button>
-            <button class="admin-delete-record-btn" data-id="${r.id}" style="padding:5px 10px;font-size:11px;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.3);border-radius:6px;cursor:pointer;">删除</button>
+            <button class="admin-delete-record-btn" data-id="${r.id}" style="padding:3px 8px;font-size:10px;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.3);border-radius:4px;cursor:pointer;">删除</button>
           </div>
         </div>
       `).join('');
     }
 
-    const totalPoints = calculateMemberPoints(member.id);
-
     const html = `
-      <h2 class="admin-modal-title">✏️ 积分管理 - ${escapeHtml(member.nickname)}</h2>
-      <div class="admin-score-total-card">
-        <div class="admin-score-total-label">当前总积分</div>
-        <div class="admin-score-total-value">${totalPoints}</div>
+      <h2 class="admin-modal-title">🎯 积分调整 - ${escapeHtml(member.nickname)}</h2>
+      <div class="admin-score-card">
+        <div class="admin-score-card-label">当前积分</div>
+        <div class="admin-score-card-value" id="current-points-display">${currentPoints}</div>
       </div>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">快速调整积分</label>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <input type="number" id="quick-points" class="admin-input" placeholder="积分数值（正加负扣）" style="flex:1;min-width:120px;" />
-          <input type="text" id="quick-reason" class="admin-input" placeholder="调整原因" style="flex:1;min-width:120px;" />
-          <button id="quick-add-btn" class="admin-btn-primary">确认调整</button>
+      <div class="admin-adjust-panel">
+        <div class="admin-adjust-row">
+          <div>
+            <label class="admin-label">调整到积分</label>
+            <input type="number" id="target-points" class="admin-input" placeholder="输入目标积分" min="0" value="${currentPoints}" />
+          </div>
+          <div>
+            <label class="admin-label">调整原因</label>
+            <input type="text" id="adjust-reason" class="admin-input" placeholder="调整原因（可选）" />
+          </div>
         </div>
+        <div class="admin-adjust-info" id="adjust-preview">差值 = 目标积分 - 当前积分</div>
       </div>
-      <div style="margin-bottom:12px;">
-        <label class="admin-label">积分记录列表（${records.length}条）</label>
-      </div>
-      <div style="max-height:280px;overflow-y:auto;">
-        ${recordsHtml}
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);">
+        <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.7);margin-bottom:10px;">📋 最近积分记录</div>
+        <div style="max-height:180px;overflow-y:auto;" id="records-container">
+          ${recordsHtml}
+        </div>
       </div>
       <div class="admin-modal-footer">
         <button class="admin-btn-secondary" id="close-modal-btn">关闭</button>
+        <button class="admin-btn-primary" id="confirm-adjust-btn">确认调整</button>
       </div>
     `;
+
+    const refreshModal = function() {
+      const newPoints = calculateMemberPoints(member.id);
+      const newRecords = getScoreRecords().filter(r => r.member_id === member.id);
+      const display = document.getElementById('current-points-display');
+      const targetInput = document.getElementById('target-points');
+      if (display) display.textContent = newPoints;
+      if (targetInput) targetInput.value = newPoints;
+      
+      const recordsContainer = document.getElementById('records-container');
+      if (recordsContainer) {
+        if (newRecords.length === 0) {
+          recordsContainer.innerHTML = '<div class="admin-empty">暂无积分记录</div>';
+        } else {
+          recordsContainer.innerHTML = newRecords.slice(0, 10).map(r => `
+            <div class="admin-score-row" data-id="${r.id}">
+              <div class="admin-score-row-info">
+                <div class="admin-score-row-name">${escapeHtml(r.reason || '未命名记录')}</div>
+                <div class="admin-score-row-reason">${escapeHtml(r.record_type || '')} · ${new Date(r.created_at).toLocaleDateString('zh-CN')}</div>
+              </div>
+              <span class="admin-score-row-points ${r.points >= 0 ? 'positive' : 'negative'}">${r.points >= 0 ? '+' : ''}${r.points}</span>
+              <div class="admin-score-row-actions">
+                <button class="admin-delete-record-btn" data-id="${r.id}" style="padding:3px 8px;font-size:10px;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.3);border-radius:4px;cursor:pointer;">删除</button>
+              </div>
+            </div>
+          `).join('');
+          recordsContainer.querySelectorAll('.admin-delete-record-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const recordId = this.dataset.id;
+              if (confirm('确定要删除这条积分记录吗？')) {
+                deleteScoreRecord(recordId);
+                refreshModal();
+              }
+            });
+          });
+        }
+      }
+    };
 
     showModal(html, function(modal) {
       modal.querySelector('#close-modal-btn').addEventListener('click', function() {
         closeModal();
         if (onClose) onClose();
       });
-      
-      modal.querySelector('#quick-add-btn').addEventListener('click', function() {
-        const points = parseInt(modal.querySelector('#quick-points').value);
-        const reason = modal.querySelector('#quick-reason').value || '管理员调整';
-        if (isNaN(points)) {
-          alert('请输入有效的积分数值');
-          return;
+
+      const targetInput = modal.querySelector('#target-points');
+      const preview = modal.querySelector('#adjust-preview');
+      targetInput.addEventListener('input', function() {
+        const target = parseInt(this.value);
+        const current = calculateMemberPoints(member.id);
+        if (!isNaN(target)) {
+          const diff = target - current;
+          preview.textContent = `差值：${diff >= 0 ? '+' : ''}${diff} 分`;
+          preview.style.color = diff >= 0 ? '#4ade80' : '#f87171';
+        } else {
+          preview.textContent = '差值 = 目标积分 - 当前积分';
+          preview.style.color = '';
         }
-        adjustMemberPoints(member.id, points, reason);
-        openScoreEditModal(member, onClose);
       });
 
-      modal.querySelectorAll('.admin-edit-record-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const recordId = this.dataset.id;
-          const record = records.find(r => r.id === recordId);
-          if (!record) return;
-          openRecordEditModal(record, function() {
-            openScoreEditModal(member, onClose);
-          });
-        });
+      modal.querySelector('#confirm-adjust-btn').addEventListener('click', function() {
+        const targetPoints = parseInt(modal.querySelector('#target-points').value);
+        const reason = modal.querySelector('#adjust-reason').value || '管理员调整积分';
+        
+        if (isNaN(targetPoints) || targetPoints < 0) {
+          alert('请输入有效的目标积分（大于等于0）');
+          return;
+        }
+
+        const currentPoints = calculateMemberPoints(member.id);
+        const diff = targetPoints - currentPoints;
+
+        if (diff === 0) {
+          alert('目标积分与当前积分相同，无需调整');
+          return;
+        }
+
+        if (confirm(`确定要将 ${escapeHtml(member.nickname)} 的积分从 ${currentPoints} 调整到 ${targetPoints} 吗？\n差值：${diff >= 0 ? '+' : ''}${diff}`)) {
+          adjustMemberPoints(member.id, diff, reason);
+          alert(`调整成功！\n${escapeHtml(member.nickname)} 的积分已从 ${currentPoints} 调整到 ${targetPoints}`);
+          closeModal();
+          if (onClose) onClose();
+        }
       });
 
       modal.querySelectorAll('.admin-delete-record-btn').forEach(btn => {
@@ -279,109 +328,23 @@
           const recordId = this.dataset.id;
           if (confirm('确定要删除这条积分记录吗？')) {
             deleteScoreRecord(recordId);
-            openScoreEditModal(member, onClose);
+            refreshModal();
           }
         });
       });
     });
   }
 
-  function openRecordEditModal(record, onClose) {
-    const html = `
-      <h2 class="admin-modal-title">✏️ 编辑积分记录</h2>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">积分数值</label>
-        <input type="number" id="edit-points" class="admin-input" value="${record.points}" />
-      </div>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">原因/说明</label>
-        <input type="text" id="edit-reason" class="admin-input" value="${escapeHtml(record.reason || '')}" />
-      </div>
-      <div style="margin-bottom:16px;">
-        <label class="admin-label">类型</label>
-        <input type="text" id="edit-type" class="admin-input" value="${escapeHtml(record.record_type || '')}" />
-      </div>
-      <div class="admin-modal-footer">
-        <button class="admin-btn-secondary" id="cancel-edit-btn">取消</button>
-        <button class="admin-btn-primary" id="save-edit-btn">保存</button>
-      </div>
-    `;
-
-    showModal(html, function(modal) {
-      modal.querySelector('#cancel-edit-btn').addEventListener('click', closeModal);
-      modal.querySelector('#save-edit-btn').addEventListener('click', function() {
-        const points = parseInt(modal.querySelector('#edit-points').value);
-        const reason = modal.querySelector('#edit-reason').value;
-        const recordType = modal.querySelector('#edit-type').value;
-        if (isNaN(points)) {
-          alert('请输入有效的积分数值');
-          return;
-        }
-        updateScoreRecord(record.id, { points, reason, record_type: recordType });
-        closeModal();
-        if (onClose) onClose();
-      });
-    });
+  function findMemberById(memberId) {
+    return getMembers().find(m => m.id === memberId);
   }
 
-  function openMemberSelectModal(title, onSelect) {
-    const members = getMembers();
-    
-    const html = `
-      <h2 class="admin-modal-title">👤 ${escapeHtml(title)}</h2>
-      <div style="margin-bottom:12px;">
-        <input type="text" id="member-search" class="admin-input" placeholder="搜索成员昵称..." />
-      </div>
-      <div id="member-list" style="max-height:400px;overflow-y:auto;">
-        ${members.map(m => `
-          <div class="admin-member-item" data-id="${m.id}" data-name="${escapeHtml(m.nickname)}">
-            <div class="admin-member-avatar">${escapeHtml(m.nickname.charAt(0))}</div>
-            <div class="admin-member-info">
-              <div class="admin-member-name">${escapeHtml(m.nickname)}</div>
-              <div class="admin-member-score">⭐ ${calculateMemberPoints(m.id)} 积分</div>
-            </div>
-            <div class="admin-member-action">
-              <button class="admin-btn-primary" style="padding:6px 12px;font-size:12px;">调整积分</button>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-      <div class="admin-modal-footer">
-        <button class="admin-btn-secondary" id="close-modal-btn">关闭</button>
-      </div>
-    `;
-
-    showModal(html, function(modal) {
-      modal.querySelector('#close-modal-btn').addEventListener('click', closeModal);
-      
-      const searchInput = modal.querySelector('#member-search');
-      const memberList = modal.querySelector('#member-list');
-      
-      searchInput.addEventListener('input', function() {
-        const keyword = this.value.toLowerCase();
-        memberList.querySelectorAll('.admin-member-item').forEach(item => {
-          const name = item.dataset.name.toLowerCase();
-          item.style.display = name.includes(keyword) ? '' : 'none';
-        });
-      });
-
-      memberList.querySelectorAll('.admin-member-item').forEach(item => {
-        item.addEventListener('click', function() {
-          const memberId = this.dataset.id;
-          const member = members.find(m => m.id === memberId);
-          if (member) {
-            closeModal();
-            onSelect(member);
-          }
-        });
-      });
-    });
+  function findMemberByQQ(qq) {
+    return getMembers().find(m => m.qq === qq);
   }
 
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+  function findMemberByNickname(nickname) {
+    return getMembers().find(m => m.nickname === nickname);
   }
 
   function setupSpecialRecordsAutoRefresh() {
@@ -434,7 +397,6 @@
   function enhanceSpecialRecordsPage() {
     const path = getCurrentPath();
     if (!path.includes('/special-records')) return;
-
     if (document.querySelector('.admin-ban-btn')) return;
 
     const tryAddBanButton = function() {
@@ -485,7 +447,6 @@
         const cards = document.querySelectorAll('.mc-card, [class*="card"]');
         if (cards.length > 0) {
           for (const card of cards) {
-            const hasList = card.querySelector('[class*="space-y"], [class*="list"], .grid');
             if (card.querySelector('h1, h2, h3')) {
               insertTarget = card;
               insertMethod = 'prepend';
@@ -552,144 +513,123 @@
 
   function enhanceUserManagementPage() {
     const path = getCurrentPath();
-    if (!path.includes('/admin') && !path.includes('/user-management') && !path.includes('/dashboard')) return;
-    
-    if (document.querySelector('.admin-score-management-section')) return;
+    if (!path.includes('/admin/users')) return;
+    if (document.querySelector('.admin-score-column')) return;
 
-    const tryAddScoreSection = function() {
-      if (document.querySelector('.admin-score-management-section')) return true;
+    const tryAddScoreColumn = function() {
+      if (document.querySelector('.admin-score-column')) return true;
 
-      const members = getMembers();
-      const totalScore = members.reduce((sum, m) => sum + calculateMemberPoints(m.id), 0);
-      const topMembers = [...members]
-        .map(m => ({ ...m, score: calculateMemberPoints(m.id) }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 5);
+      const table = document.querySelector('table');
+      if (!table) return false;
 
-      const sectionHtml = `
-        <div class="admin-score-management-section admin-animate-in" style="margin-bottom:24px;">
-          <div class="admin-section-title">🎯 积分管理中心</div>
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;">
-            <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px;text-align:center;">
-              <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">成员总数</div>
-              <div style="font-size:24px;font-weight:700;color:#fbbf24;">${members.length}</div>
-            </div>
-            <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:12px;padding:14px;text-align:center;">
-              <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">总积分</div>
-              <div style="font-size:24px;font-weight:700;color:#4ade80;">${totalScore}</div>
-            </div>
-          </div>
+      const thead = table.querySelector('thead tr');
+      const tbody = table.querySelector('tbody');
+      if (!thead || !tbody) return false;
+
+      const th = document.createElement('th');
+      th.className = 'admin-score-column text-left px-6 py-3 text-sm font-semibold text-gray-600';
+      th.textContent = '积分';
+      
+      const operationTh = thead.querySelector('th:last-child');
+      if (operationTh) {
+        thead.insertBefore(th, operationTh);
+      }
+
+      function updateRows() {
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(row => {
+          if (row.querySelector('.admin-score-cell')) return;
+
+          const nameEl = row.querySelector('.font-medium');
+          const qqEl = row.querySelector('.font-mono');
           
-          <div class="admin-points-adjust-card">
-            <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:12px;">⚡ 快速调整积分</div>
-            <div style="margin-bottom:12px;">
-              <button id="admin-select-member-btn" class="admin-btn-primary" style="width:100%;padding:12px;font-size:14px;">
-                👤 选择成员调整积分
-              </button>
-            </div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.5);text-align:center;">
-              点击按钮选择成员，查看并调整其积分记录
-            </div>
-          </div>
+          let member = null;
+          let memberId = null;
+          let points = 0;
 
-          <div class="admin-score-manage-section">
-            <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:12px;">🏆 积分排行榜 TOP 5</div>
-            <div style="max-height:240px;overflow-y:auto;">
-              ${topMembers.length === 0 ? '<div class="admin-empty">暂无成员数据</div>' : topMembers.map((m, idx) => `
-                <div class="admin-score-row" data-id="${m.id}">
-                  <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
-                    <div style="width:28px;height:28px;border-radius:50%;background:${idx === 0 ? '#fbbf24' : idx === 1 ? '#9ca3af' : idx === 2 ? '#f59e0b' : 'rgba(255,255,255,0.1)'};display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:bold;flex-shrink:0;">${idx + 1}</div>
-                    <div class="admin-score-row-info">
-                      <div class="admin-score-row-name">${escapeHtml(m.nickname)}</div>
-                    </div>
-                  </div>
-                  <span class="admin-score-row-points positive">${m.score}</span>
-                  <div class="admin-score-row-actions">
-                    <button class="admin-manage-member-btn" data-id="${m.id}" style="padding:5px 10px;font-size:11px;background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;">管理</button>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-      `;
-
-      let insertTarget = null;
-      let insertMethod = 'after';
-
-      const pageSelectors = [
-        '.user-management',
-        '[class*="user-management"]',
-        '[class*="admin"]',
-        '.max-w-6xl',
-        '[class*="container"]',
-        'main',
-        '#app > div'
-      ];
-
-      for (const selector of pageSelectors) {
-        const el = document.querySelector(selector);
-        if (el) {
-          if (selector.includes('user-management') || selector.includes('admin')) {
-            insertTarget = el.firstElementChild;
-            insertMethod = 'prepend';
-          } else {
-            insertTarget = el;
-            insertMethod = 'prepend';
+          if (qqEl) {
+            const qq = qqEl.textContent.trim();
+            member = findMemberByQQ(qq);
           }
-          break;
-        }
-      }
+          
+          if (!member && nameEl) {
+            const name = nameEl.textContent.trim();
+            member = findMemberByNickname(name);
+          }
 
-      const headingSelectors = ['h1', 'h2', '.text-center', '[class*="text-center"]'];
-      for (const selector of headingSelectors) {
-        const el = document.querySelector(selector);
-        if (el && el.textContent && (el.textContent.includes('管理') || el.textContent.includes('用户'))) {
-          insertTarget = el.parentElement;
-          insertMethod = 'after';
-          break;
-        }
-      }
-
-      if (!insertTarget) return false;
-
-      const section = document.createElement('div');
-      section.innerHTML = sectionHtml;
-      const scoreSection = section.firstElementChild;
-
-      if (insertMethod === 'prepend') {
-        insertTarget.insertBefore(scoreSection, insertTarget.firstChild);
-      } else {
-        insertTarget.parentNode.insertBefore(scoreSection, insertTarget.nextSibling);
-      }
-
-      const selectBtn = document.getElementById('admin-select-member-btn');
-      if (selectBtn) {
-        selectBtn.addEventListener('click', function() {
-          openMemberSelectModal('选择要调整积分的成员', function(member) {
-            openScoreEditModal(member, function() {
-              const section = document.querySelector('.admin-score-management-section');
-              if (section) section.remove();
-              tryAddScoreSection();
-            });
-          });
-        });
-      }
-
-      document.querySelectorAll('.admin-manage-member-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          const memberId = this.dataset.id;
-          const member = findMemberById(memberId);
           if (member) {
-            openScoreEditModal(member, function() {
-              const section = document.querySelector('.admin-score-management-section');
-              if (section) section.remove();
-              tryAddScoreSection();
+            memberId = member.id;
+            points = calculateMemberPoints(memberId);
+          }
+
+          const pointsClass = points > 0 ? 'positive' : points < 0 ? 'negative' : 'zero';
+
+          const td = document.createElement('td');
+          td.className = 'admin-score-cell-wrap px-6 py-4';
+          td.innerHTML = `
+            <span class="admin-score-cell ${pointsClass}" data-member-id="${memberId || ''}">
+              ${points}
+            </span>
+          `;
+
+          const operationTd = row.querySelector('td:last-child');
+          if (operationTd) {
+            row.insertBefore(td, operationTd);
+            
+            const adjustBtn = document.createElement('button');
+            adjustBtn.className = 'admin-adjust-btn';
+            adjustBtn.textContent = '调整积分';
+            adjustBtn.style.marginLeft = '8px';
+            
+            adjustBtn.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              let targetMember = member;
+              
+              if (!targetMember) {
+                if (qqEl) {
+                  const qq = qqEl.textContent.trim();
+                  targetMember = findMemberByQQ(qq);
+                }
+              }
+              if (!targetMember && nameEl) {
+                const name = nameEl.textContent.trim();
+                targetMember = findMemberByNickname(name);
+              }
+
+              if (targetMember) {
+                openScoreAdjustModal(targetMember, function() {
+                  const newPoints = calculateMemberPoints(targetMember.id);
+                  const cell = row.querySelector('.admin-score-cell');
+                  if (cell) {
+                    cell.textContent = newPoints;
+                    const newClass = newPoints > 0 ? 'positive' : newPoints < 0 ? 'negative' : 'zero';
+                    cell.className = `admin-score-cell ${newClass}`;
+                  }
+                });
+              } else {
+                alert('无法找到该用户的成员信息，请先在成员库中添加该用户');
+              }
             });
+
+            const actionContainer = operationTd.querySelector('.flex, [class*="flex"]');
+            if (actionContainer) {
+              actionContainer.appendChild(adjustBtn);
+            } else {
+              operationTd.appendChild(adjustBtn);
+            }
           }
         });
+      }
+
+      updateRows();
+
+      const observer = new MutationObserver(function() {
+        clearTimeout(window._userTableObserverTimer);
+        window._userTableObserverTimer = setTimeout(updateRows, 100);
       });
+      observer.observe(tbody, { childList: true, subtree: true });
 
       return true;
     };
@@ -699,7 +639,7 @@
     
     function tryWithDelay() {
       if (attempts >= maxAttempts) return;
-      if (tryAddScoreSection()) return;
+      if (tryAddScoreColumn()) return;
       attempts++;
       setTimeout(tryWithDelay, 300 * attempts);
     }
@@ -709,7 +649,7 @@
     const observer = new MutationObserver(function() {
       clearTimeout(window._userMgmtObserverTimer);
       window._userMgmtObserverTimer = setTimeout(function() {
-        tryAddScoreSection();
+        tryAddScoreColumn();
       }, 200);
     });
     
@@ -748,8 +688,8 @@
     console.log('%c当前用户: ' + (getCurrentUser()?.nickname || '未登录') + ' | 角色: ' + (isAdmin() ? '管理员' : '普通用户'), 'color: ' + (isAdmin() ? '#4ade80' : '#fbbf24') + '; font-weight: 500;');
     if (isAdmin()) {
       console.log('%c功能说明：', 'color: rgba(255,255,255,0.6); font-size: 12px;');
-      console.log('%c1. 管理后台页面有积分管理中心', 'color: rgba(255,255,255,0.6); font-size: 12px;');
-      console.log('%c2. 特殊榜单页面有查看被ban名单按钮', 'color: rgba(255,255,255,0.6); font-size: 12px;');
+      console.log('%c1. 用户管理表格有积分列和调整按钮', 'color: rgba(255,255,255,0.6); font-size: 12px;');
+      console.log('%c2. 特殊榜单有查看被ban名单按钮', 'color: rgba(255,255,255,0.6); font-size: 12px;');
       console.log('%c3. 特殊榜单添加后自动刷新', 'color: rgba(255,255,255,0.6); font-size: 12px;');
     }
   }
@@ -771,8 +711,7 @@
     updateScoreRecord,
     deleteScoreRecord,
     adjustMemberPoints,
-    openScoreEditModal,
-    openMemberSelectModal,
+    openScoreAdjustModal,
     refreshPage: () => window.location.reload()
   };
 
