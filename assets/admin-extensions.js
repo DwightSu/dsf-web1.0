@@ -4,34 +4,48 @@
   const BASE = '/dsf-web1.0/';
   const STORAGE_PREFIX = 'mc_activity_';
   const CURRENT_USER_KEY = 'mc_current_user';
+  const USERS_KEY = 'mc_users';
+  const MEMBERS_KEY = 'custom_members';
 
-  function getStore(key) {
+  function getStore(fullKey) {
     try {
-      const data = localStorage.getItem(STORAGE_PREFIX + key);
+      const data = localStorage.getItem(fullKey);
       return data ? JSON.parse(data) : null;
     } catch(e) {
       return null;
     }
   }
 
-  function setStore(key, value) {
+  function setStore(fullKey, value) {
     try {
-      localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
+      localStorage.setItem(fullKey, JSON.stringify(value));
     } catch(e) {
       console.warn('Failed to save to localStorage', e);
     }
   }
 
+  function getUsers() {
+    return getStore(USERS_KEY) || [];
+  }
+
   function getMembers() {
-    return getStore('custom_members') || [];
+    return getStore(STORAGE_PREFIX + MEMBERS_KEY) || [];
+  }
+
+  function setMembers(members) {
+    setStore(STORAGE_PREFIX + MEMBERS_KEY, members);
   }
 
   function getScoreRecords() {
-    return getStore('score_records') || [];
+    return getStore(STORAGE_PREFIX + 'score_records') || [];
+  }
+
+  function setScoreRecords(records) {
+    setStore(STORAGE_PREFIX + 'score_records', records);
   }
 
   function getSpecialRecords() {
-    return getStore('special_records') || [];
+    return getStore(STORAGE_PREFIX + 'special_records') || [];
   }
 
   function getCurrentUser() {
@@ -48,6 +62,81 @@
     return user && user.role === 'admin';
   }
 
+  function generateAvatar(name) {
+    const colors = ["#5CB85C","#5BC0DE","#F0AD4E","#D9534F","#9B59B6","#3498DB","#1ABC9C","#E67E22"];
+    const idx = name.charCodeAt(0) % colors.length;
+    const color = colors[idx];
+    const initial = name.charAt(0).toUpperCase();
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:${color};stop-opacity:1" />
+          <stop offset="100%" style="stop-color:${color}dd;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <rect width="200" height="200" rx="100" fill="url(#grad)"/>
+      <text x="100" y="100" text-anchor="middle" dominant-baseline="central" fill="white" font-size="80" font-weight="bold" font-family="Arial, sans-serif">
+        ${initial}
+      </text>
+    </svg>`;
+    return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg.trim())));
+  }
+
+  function syncMembersFromUsers() {
+    const users = getUsers();
+    const members = getMembers();
+    
+    const memberIds = new Set(members.map(m => m.id));
+    const userIds = new Set(users.map(u => u.id));
+    
+    let changed = false;
+    const newMembers = [...members];
+    
+    for (const user of users) {
+      if (!memberIds.has(user.id)) {
+        newMembers.push({
+          id: user.id,
+          nickname: user.nickname,
+          qq_number: user.qq_number,
+          avatar_url: user.avatar_url || generateAvatar(user.nickname),
+          notes: user.role === 'admin' ? '管理员' : '社区成员',
+          tags: user.role === 'admin' ? ['管理员'] : ['成员'],
+          created_at: user.created_at || new Date().toISOString()
+        });
+        changed = true;
+        console.log(`[同步] 新增成员: ${user.nickname}`);
+      } else {
+        const memberIdx = newMembers.findIndex(m => m.id === user.id);
+        if (memberIdx !== -1) {
+          const m = newMembers[memberIdx];
+          let memberChanged = false;
+          if (m.nickname !== user.nickname) { m.nickname = user.nickname; memberChanged = true; }
+          if (m.qq_number !== user.qq_number) { m.qq_number = user.qq_number; memberChanged = true; }
+          if (user.avatar_url && m.avatar_url !== user.avatar_url) { m.avatar_url = user.avatar_url; memberChanged = true; }
+          if (memberChanged) {
+            changed = true;
+            newMembers[memberIdx] = m;
+            console.log(`[同步] 更新成员: ${user.nickname}`);
+          }
+        }
+      }
+    }
+    
+    const finalMembers = newMembers.filter(m => userIds.has(m.id));
+    if (finalMembers.length !== newMembers.length) {
+      changed = true;
+      console.log(`[同步] 删除了 ${newMembers.length - finalMembers.length} 个不在用户列表中的成员`);
+    }
+    
+    if (changed) {
+      setMembers(finalMembers);
+      triggerStorageEvent();
+      console.log(`[同步] 用户→成员库同步完成，共 ${finalMembers.length} 名成员`);
+    }
+    
+    return changed;
+  }
+
   function calculateMemberPoints(memberId) {
     const records = getScoreRecords().filter(r => r.member_id === memberId);
     return records.reduce((sum, r) => sum + (r.points || 0), 0);
@@ -56,7 +145,7 @@
   function addScoreRecord(record) {
     const records = getScoreRecords();
     records.unshift(record);
-    setStore('score_records', records);
+    setScoreRecords(records);
     triggerStorageEvent();
   }
 
@@ -65,7 +154,7 @@
     const idx = records.findIndex(r => r.id === id);
     if (idx !== -1) {
       records[idx] = { ...records[idx], ...updates };
-      setStore('score_records', records);
+      setScoreRecords(records);
       triggerStorageEvent();
       return true;
     }
@@ -75,7 +164,7 @@
   function deleteScoreRecord(id) {
     const records = getScoreRecords();
     const filtered = records.filter(r => r.id !== id);
-    setStore('score_records', filtered);
+    setScoreRecords(filtered);
     triggerStorageEvent();
     return filtered.length !== records.length;
   }
@@ -166,6 +255,7 @@
       .admin-score-cell.zero { color:#9ca3af; }
       .admin-adjust-btn { padding:4px 10px;font-size:12px;font-weight:500;color:#fff;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:6px;cursor:pointer;transition:all 0.2s;white-space:nowrap; }
       .admin-adjust-btn:hover { transform:translateY(-1px);box-shadow:0 2px 8px rgba(245,158,11,0.4); }
+      .admin-sync-badge { display:inline-flex;align-items:center;gap:4px;padding:3px 8px;font-size:11px;font-weight:500;color:#10b981;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:999px; }
       @keyframes admin-fade-in { from { opacity:0;transform:translateY(-6px);} to { opacity:1;transform:translateY(0);} }
       .admin-animate-in { animation:admin-fade-in 0.2s ease; }
     `;
@@ -335,16 +425,16 @@
     });
   }
 
-  function findMemberById(memberId) {
-    return getMembers().find(m => m.id === memberId);
+  function findUserById(userId) {
+    return getUsers().find(u => u.id === userId);
   }
 
-  function findMemberByQQ(qq) {
-    return getMembers().find(m => m.qq === qq);
+  function findUserByQQ(qq) {
+    return getUsers().find(u => u.qq_number === qq);
   }
 
-  function findMemberByNickname(nickname) {
-    return getMembers().find(m => m.nickname === nickname);
+  function findUserByNickname(nickname) {
+    return getUsers().find(u => u.nickname === nickname);
   }
 
   function setupSpecialRecordsAutoRefresh() {
@@ -514,6 +604,9 @@
   function enhanceUserManagementPage() {
     const path = getCurrentPath();
     if (!path.includes('/admin/users')) return;
+
+    syncMembersFromUsers();
+
     if (document.querySelector('.admin-score-column')) return;
 
     const tryAddScoreColumn = function() {
@@ -542,24 +635,34 @@
 
           const nameEl = row.querySelector('.font-medium');
           const qqEl = row.querySelector('.font-mono');
+          const idEl = row.querySelector('.text-xs.text-gray-400');
           
-          let member = null;
-          let memberId = null;
+          let user = null;
+          let userId = null;
           let points = 0;
 
-          if (qqEl) {
-            const qq = qqEl.textContent.trim();
-            member = findMemberByQQ(qq);
-          }
-          
-          if (!member && nameEl) {
-            const name = nameEl.textContent.trim();
-            member = findMemberByNickname(name);
+          if (idEl) {
+            const idText = idEl.textContent || '';
+            const idMatch = idText.match(/ID:\s*(user_[^\s]+)/);
+            if (idMatch) {
+              const fullId = idMatch[1];
+              user = findUserById(fullId);
+            }
           }
 
-          if (member) {
-            memberId = member.id;
-            points = calculateMemberPoints(memberId);
+          if (!user && qqEl) {
+            const qq = qqEl.textContent.trim();
+            user = findUserByQQ(qq);
+          }
+          
+          if (!user && nameEl) {
+            const name = nameEl.textContent.trim().replace(/\s+我\s*$/, '').trim();
+            user = findUserByNickname(name);
+          }
+
+          if (user) {
+            userId = user.id;
+            points = calculateMemberPoints(userId);
           }
 
           const pointsClass = points > 0 ? 'positive' : points < 0 ? 'negative' : 'zero';
@@ -567,7 +670,7 @@
           const td = document.createElement('td');
           td.className = 'admin-score-cell-wrap px-6 py-4';
           td.innerHTML = `
-            <span class="admin-score-cell ${pointsClass}" data-member-id="${memberId || ''}">
+            <span class="admin-score-cell ${pointsClass}" data-user-id="${userId || ''}">
               ${points}
             </span>
           `;
@@ -580,27 +683,37 @@
             adjustBtn.className = 'admin-adjust-btn';
             adjustBtn.textContent = '调整积分';
             adjustBtn.style.marginLeft = '8px';
+            adjustBtn.style.display = 'inline-flex';
+            adjustBtn.style.alignItems = 'center';
             
             adjustBtn.addEventListener('click', function(e) {
               e.preventDefault();
               e.stopPropagation();
+              e.stopImmediatePropagation();
               
-              let targetMember = member;
+              let targetUser = user;
               
-              if (!targetMember) {
-                if (qqEl) {
-                  const qq = qqEl.textContent.trim();
-                  targetMember = findMemberByQQ(qq);
+              if (!targetUser && idEl) {
+                const idText = idEl.textContent || '';
+                const idMatch = idText.match(/ID:\s*(user_[^\s]+)/);
+                if (idMatch) {
+                  targetUser = findUserById(idMatch[1]);
                 }
               }
-              if (!targetMember && nameEl) {
-                const name = nameEl.textContent.trim();
-                targetMember = findMemberByNickname(name);
+              
+              if (!targetUser && qqEl) {
+                const qq = qqEl.textContent.trim();
+                targetUser = findUserByQQ(qq);
+              }
+              if (!targetUser && nameEl) {
+                const name = nameEl.textContent.trim().replace(/\s+我\s*$/, '').trim();
+                targetUser = findUserByNickname(name);
               }
 
-              if (targetMember) {
-                openScoreAdjustModal(targetMember, function() {
-                  const newPoints = calculateMemberPoints(targetMember.id);
+              if (targetUser) {
+                syncMembersFromUsers();
+                openScoreAdjustModal(targetUser, function() {
+                  const newPoints = calculateMemberPoints(targetUser.id);
                   const cell = row.querySelector('.admin-score-cell');
                   if (cell) {
                     cell.textContent = newPoints;
@@ -609,7 +722,7 @@
                   }
                 });
               } else {
-                alert('无法找到该用户的成员信息，请先在成员库中添加该用户');
+                alert('无法找到该用户信息');
               }
             });
 
@@ -627,7 +740,10 @@
 
       const observer = new MutationObserver(function() {
         clearTimeout(window._userTableObserverTimer);
-        window._userTableObserverTimer = setTimeout(updateRows, 100);
+        window._userTableObserverTimer = setTimeout(function() {
+          syncMembersFromUsers();
+          updateRows();
+        }, 100);
       });
       observer.observe(tbody, { childList: true, subtree: true });
 
@@ -658,8 +774,34 @@
     }
   }
 
+  function setupAutoSync() {
+    if (document.body.dataset.autoSyncSetup === 'true') return;
+    document.body.dataset.autoSyncSetup = 'true';
+
+    syncMembersFromUsers();
+
+    setInterval(syncMembersFromUsers, 3000);
+
+    window.addEventListener('storage', function(e) {
+      if (e.key === USERS_KEY) {
+        syncMembersFromUsers();
+      }
+    });
+
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = function(key, value) {
+      originalSetItem.call(this, key, value);
+      if (key === USERS_KEY) {
+        setTimeout(syncMembersFromUsers, 100);
+      }
+    };
+
+    console.log('%c🔄 用户→成员库 自动同步已启动', 'color: #4ade80; font-weight: bold;');
+  }
+
   function initPageEnhancements() {
     if (isAdmin()) {
+      setupAutoSync();
       setupSpecialRecordsAutoRefresh();
       enhanceSpecialRecordsPage();
       enhanceUserManagementPage();
@@ -691,6 +833,7 @@
       console.log('%c1. 用户管理表格有积分列和调整按钮', 'color: rgba(255,255,255,0.6); font-size: 12px;');
       console.log('%c2. 特殊榜单有查看被ban名单按钮', 'color: rgba(255,255,255,0.6); font-size: 12px;');
       console.log('%c3. 特殊榜单添加后自动刷新', 'color: rgba(255,255,255,0.6); font-size: 12px;');
+      console.log('%c4. 用户→成员库自动同步（每3秒）', 'color: rgba(255,255,255,0.6); font-size: 12px;');
     }
   }
 
@@ -702,6 +845,7 @@
 
   window.AdminExtensions = {
     isAdmin,
+    getUsers,
     getMembers,
     getScoreRecords,
     getSpecialRecords,
@@ -712,6 +856,7 @@
     deleteScoreRecord,
     adjustMemberPoints,
     openScoreAdjustModal,
+    syncMembersFromUsers,
     refreshPage: () => window.location.reload()
   };
 
