@@ -244,8 +244,8 @@
       .admin-score-row-points.negative { color:#f87171; }
       .admin-score-row-actions { display:flex;gap:4px;flex-shrink:0; }
       .admin-empty { text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px; }
-      .admin-ban-btn { display:inline-flex;align-items:center;gap:6px;padding:8px 14px;font-size:13px;font-weight:500;color:#f87171;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:8px;cursor:pointer;transition:all 0.2s;text-decoration:none;flex-shrink:0; }
-      .admin-ban-btn:hover { background:rgba(248,113,113,0.2);border-color:rgba(248,113,113,0.5); }
+      .admin-ban-btn { display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;transition:all 0.2s;text-decoration:none;flex-shrink:0; }
+      .admin-ban-btn:hover { background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);color:#fff; }
       .admin-score-cell { font-weight:600; }
       .admin-score-cell.positive { color:#16a34a; }
       .admin-score-cell.negative { color:#dc2626; }
@@ -489,65 +489,45 @@
     const tryAddBanButton = function() {
       if (document.querySelector('.admin-ban-btn')) return true;
 
-      const selectors = [
-        'h1', 'h2', '.page-title', '[class*="title"]',
-        'button[class*="primary"]', 'button[class*="add"]',
-        '.mc-card', '[class*="card"]',
-        'input[placeholder*="搜索"]',
-        '[class*="flex"][class*="justify-between"]',
-        '[class*="flex"][class*="gap"]'
+      const pageTitle = document.querySelector('h1, h2');
+      let titleParent = pageTitle ? pageTitle.parentElement : null;
+      
+      let insertTarget = null;
+      let insertMethod = 'append';
+
+      const headerSelectors = [
+        '[class*="max-w-6xl"] > div:first-child',
+        '[class*="max-w-6xl"] > section:first-child',
+        'main > div:first-child',
+        '[class*="page-header"]',
+        '[class*="header"]'
       ];
 
-      let insertTarget = null;
-      let insertMethod = 'after';
-
-      for (const selector of selectors) {
-        const elements = document.querySelectorAll(selector);
-        for (const el of elements) {
-          const text = el.textContent || '';
-          const isSpecial = text.includes('特殊榜单') || 
-                           text.includes('特殊记录') ||
-                           text.includes('Special') ||
-                           el.closest('[class*="special"]');
-
-          if (isSpecial || selector.includes('flex') || selector.includes('gap')) {
-            const parent = el.parentElement;
-            if (parent && parent.querySelector('[class*="card"]')) {
-              continue;
-            }
-            if (el.querySelector('input, button') && el.children.length >= 2) {
-              insertTarget = el;
-              insertMethod = 'append';
-              break;
-            }
-            if (isSpecial && parent) {
-              insertTarget = parent;
-              insertMethod = 'after';
-              break;
-            }
-          }
+      for (const sel of headerSelectors) {
+        const el = document.querySelector(sel);
+        if (el && el.querySelector('h1, h2')) {
+          insertTarget = el;
+          break;
         }
-        if (insertTarget) break;
+      }
+
+      if (!insertTarget && titleParent) {
+        insertTarget = titleParent;
       }
 
       if (!insertTarget) {
-        const cards = document.querySelectorAll('.mc-card, [class*="card"]');
-        if (cards.length > 0) {
-          for (const card of cards) {
-            if (card.querySelector('h1, h2, h3')) {
-              insertTarget = card;
-              insertMethod = 'prepend';
-              break;
-            }
-          }
+        const firstCard = document.querySelector('.mc-card, [class*="card"]');
+        if (firstCard) {
+          insertTarget = firstCard.querySelector('[class*="flex"], [class*="header"]') || firstCard;
+          insertMethod = 'prepend';
         }
       }
 
       if (!insertTarget) {
-        const mainContent = document.querySelector('.max-w-6xl, [class*="container"], main, #app > div');
+        const mainContent = document.querySelector('[class*="max-w-6xl"], [class*="container"], main');
         if (mainContent) {
-          insertTarget = mainContent.firstElementChild || mainContent;
-          insertMethod = 'after';
+          insertTarget = mainContent;
+          insertMethod = 'prepend';
         }
       }
 
@@ -560,15 +540,14 @@
       banLink.rel = 'noopener noreferrer';
       banLink.innerHTML = '🚫 查看被ban名单';
 
-      if (insertMethod === 'append') {
-        insertTarget.appendChild(banLink);
-      } else if (insertMethod === 'prepend') {
+      if (insertMethod === 'prepend') {
         insertTarget.insertBefore(banLink, insertTarget.firstChild);
         banLink.style.marginBottom = '16px';
+        banLink.style.float = 'right';
       } else {
-        insertTarget.parentNode.insertBefore(banLink, insertTarget.nextSibling);
-        banLink.style.marginTop = '16px';
-        banLink.style.display = 'inline-flex';
+        insertTarget.appendChild(banLink);
+        banLink.style.float = 'right';
+        banLink.style.marginTop = '8px';
       }
 
       return true;
@@ -858,6 +837,82 @@
     console.log('%c👥 成员库页面同步过滤已启动', 'color: #10b981; font-weight: bold;');
   }
 
+  function enhanceScoreboardPage() {
+    const path = getCurrentPath();
+    if (!path.includes('/scoreboard')) return;
+    if (document.body.dataset.scoreboardEnhanced === 'true') return;
+    document.body.dataset.scoreboardEnhanced = 'true';
+
+    const userIds = new Set(getUsers().map(u => u.id));
+    const userQQs = new Set(getUsers().map(u => u.qq_number));
+
+    function shouldShowMember(memberId, nickname) {
+      if (memberId && userIds.has(memberId)) return true;
+      const users = getUsers();
+      if (nickname) {
+        const found = users.find(u => u.nickname === nickname.trim());
+        if (found) return true;
+      }
+      return false;
+    }
+
+    function filterScoreboard() {
+      const top3 = document.querySelectorAll('[class*="scoreboard"] [class*="flex"] > div[class*="flex-1"], [class*="justify-center"][class*="items-end"] > div');
+      top3.forEach(item => {
+        const nameEl = item.querySelector('h3, [class*="font-bold"]');
+        if (nameEl) {
+          const name = nameEl.textContent.trim();
+          if (!shouldShowMember(null, name)) {
+            item.style.display = 'none';
+          } else {
+            item.style.display = '';
+          }
+        }
+      });
+
+      const listItems = document.querySelectorAll('[class*="divide-y"] > a[href*="/members/"], [class*="divide-y"] > div');
+      listItems.forEach(item => {
+        const href = item.getAttribute('href') || '';
+        const idMatch = href.match(/\/members\/(.+)/);
+        const memberId = idMatch ? idMatch[1] : null;
+        
+        const nameEl = item.querySelector('h3, [class*="font-semibold"], [class*="font-medium"]');
+        const nickname = nameEl ? nameEl.textContent.trim() : '';
+
+        if (!shouldShowMember(memberId, nickname)) {
+          item.style.display = 'none';
+        } else {
+          item.style.display = '';
+        }
+      });
+
+      const countEl = document.querySelector('[class*="text-gray-400"]');
+      if (countEl && countEl.textContent.includes('位玩家')) {
+        const visibleCount = Array.from(listItems).filter(c => c.style.display !== 'none').length;
+        const top3Visible = Array.from(top3).filter(c => c.style.display !== 'none').length;
+        const total = visibleCount + top3Visible;
+        if (total > 0) {
+          countEl.textContent = `共 ${total} 位玩家`;
+        }
+      }
+    }
+
+    let filterTimer = null;
+    const observer = new MutationObserver(function() {
+      clearTimeout(filterTimer);
+      filterTimer = setTimeout(filterScoreboard, 100);
+    });
+
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    setTimeout(filterScoreboard, 500);
+    setTimeout(filterScoreboard, 1500);
+
+    console.log('%c🏆 积分榜页面同步过滤已启动', 'color: #f59e0b; font-weight: bold;');
+  }
+
   function setupScoreboardAutoRefresh() {
     const path = getCurrentPath();
     if (!path.includes('/scoreboard') && !path.includes('/ranking') && !path.includes('/积分榜')) return;
@@ -915,6 +970,7 @@
       enhanceSpecialRecordsPage();
       enhanceUserManagementPage();
       enhanceMembersPage();
+      enhanceScoreboardPage();
     }
   }
 
