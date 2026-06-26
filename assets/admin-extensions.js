@@ -244,8 +244,8 @@
       .admin-score-row-points.negative { color:#f87171; }
       .admin-score-row-actions { display:flex;gap:4px;flex-shrink:0; }
       .admin-empty { text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px; }
-      .admin-ban-btn { display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;transition:all 0.2s;text-decoration:none;flex-shrink:0; }
-      .admin-ban-btn:hover { background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);color:#fff; }
+      .admin-ban-btn { display:inline-flex;align-items:center;gap:6px;padding:8px 14px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;transition:all 0.2s;text-decoration:none;flex-shrink:0; }
+      .admin-ban-btn:hover { background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.15); }
       .admin-score-cell { font-weight:600; }
       .admin-score-cell.positive { color:#16a34a; }
       .admin-score-cell.negative { color:#dc2626; }
@@ -489,68 +489,46 @@
     const tryAddBanButton = function() {
       if (document.querySelector('.admin-ban-btn')) return true;
 
-      const pageTitle = document.querySelector('h1, h2');
-      let titleParent = pageTitle ? pageTitle.parentElement : null;
-      
-      let insertTarget = null;
-      let insertMethod = 'append';
+      const addBtn = document.querySelector('button[class*="purple"]');
+      let targetContainer = null;
 
-      const headerSelectors = [
-        '[class*="max-w-6xl"] > div:first-child',
-        '[class*="max-w-6xl"] > section:first-child',
-        'main > div:first-child',
-        '[class*="page-header"]',
-        '[class*="header"]'
+      if (addBtn) {
+        targetContainer = addBtn.parentElement;
+        if (targetContainer) {
+          const banLink = document.createElement('a');
+          banLink.className = 'admin-ban-btn admin-animate-in';
+          banLink.href = 'https://bans.geukchisseokda.top';
+          banLink.target = '_blank';
+          banLink.rel = 'noopener noreferrer';
+          banLink.innerHTML = '🚫 被ban名单';
+          banLink.style.marginLeft = '8px';
+          targetContainer.appendChild(banLink);
+          return true;
+        }
+      }
+
+      const cardSelectors = [
+        '.mc-card .flex.justify-between',
+        '.mc-card [class*="flex-wrap"][class*="gap-4"]',
+        '[class*="flex-wrap"][class*="gap-4"][class*="justify-between"]'
       ];
 
-      for (const sel of headerSelectors) {
+      for (const sel of cardSelectors) {
         const el = document.querySelector(sel);
-        if (el && el.querySelector('h1, h2')) {
-          insertTarget = el;
-          break;
+        if (el && el.querySelector('button, input')) {
+          const banLink = document.createElement('a');
+          banLink.className = 'admin-ban-btn admin-animate-in';
+          banLink.href = 'https://bans.geukchisseokda.top';
+          banLink.target = '_blank';
+          banLink.rel = 'noopener noreferrer';
+          banLink.innerHTML = '🚫 被ban名单';
+          banLink.style.marginLeft = 'auto';
+          el.appendChild(banLink);
+          return true;
         }
       }
 
-      if (!insertTarget && titleParent) {
-        insertTarget = titleParent;
-      }
-
-      if (!insertTarget) {
-        const firstCard = document.querySelector('.mc-card, [class*="card"]');
-        if (firstCard) {
-          insertTarget = firstCard.querySelector('[class*="flex"], [class*="header"]') || firstCard;
-          insertMethod = 'prepend';
-        }
-      }
-
-      if (!insertTarget) {
-        const mainContent = document.querySelector('[class*="max-w-6xl"], [class*="container"], main');
-        if (mainContent) {
-          insertTarget = mainContent;
-          insertMethod = 'prepend';
-        }
-      }
-
-      if (!insertTarget) return false;
-
-      const banLink = document.createElement('a');
-      banLink.className = 'admin-ban-btn admin-animate-in';
-      banLink.href = 'https://bans.geukchisseokda.top';
-      banLink.target = '_blank';
-      banLink.rel = 'noopener noreferrer';
-      banLink.innerHTML = '🚫 查看被ban名单';
-
-      if (insertMethod === 'prepend') {
-        insertTarget.insertBefore(banLink, insertTarget.firstChild);
-        banLink.style.marginBottom = '16px';
-        banLink.style.float = 'right';
-      } else {
-        insertTarget.appendChild(banLink);
-        banLink.style.float = 'right';
-        banLink.style.marginTop = '8px';
-      }
-
-      return true;
+      return false;
     };
 
     let attempts = 0;
@@ -843,34 +821,83 @@
     if (document.body.dataset.scoreboardEnhanced === 'true') return;
     document.body.dataset.scoreboardEnhanced = 'true';
 
-    const userIds = new Set(getUsers().map(u => u.id));
-    const userQQs = new Set(getUsers().map(u => u.qq_number));
-
-    function shouldShowMember(memberId, nickname) {
-      if (memberId && userIds.has(memberId)) return true;
+    function getValidUserIds() {
       const users = getUsers();
-      if (nickname) {
-        const found = users.find(u => u.nickname === nickname.trim());
-        if (found) return true;
+      const userIds = new Set(users.map(u => u.id));
+      const userNicknames = new Set(users.map(u => u.nickname));
+      const userQQs = new Set(users.map(u => u.qq_number));
+      return { userIds, userNicknames, userQQs };
+    }
+
+    function isValidMember(memberId, nickname) {
+      const { userIds, userNicknames, userQQs } = getValidUserIds();
+      if (memberId && userIds.has(memberId)) return true;
+      if (nickname && userNicknames.has(nickname.trim())) return true;
+      const members = getMembers();
+      const member = members.find(m => 
+        (memberId && m.id === memberId) || 
+        (nickname && m.nickname === nickname.trim())
+      );
+      if (member) {
+        if (userQQs.has(member.qq_number)) return true;
+        if (member.id.startsWith('user_') && userIds.has(member.id)) return true;
       }
       return false;
     }
 
     function filterScoreboard() {
-      const top3 = document.querySelectorAll('[class*="scoreboard"] [class*="flex"] > div[class*="flex-1"], [class*="justify-center"][class*="items-end"] > div');
-      top3.forEach(item => {
-        const nameEl = item.querySelector('h3, [class*="font-bold"]');
-        if (nameEl) {
-          const name = nameEl.textContent.trim();
-          if (!shouldShowMember(null, name)) {
-            item.style.display = 'none';
-          } else {
-            item.style.display = '';
-          }
+      const { userIds, userNicknames, userQQs } = getValidUserIds();
+      const members = getMembers();
+
+      function checkValid(id, name) {
+        if (id && userIds.has(id)) return true;
+        if (name && userNicknames.has(name.trim())) return true;
+        const m = members.find(x => 
+          (id && x.id === id) || (name && x.nickname === name.trim())
+        );
+        if (m) {
+          if (userQQs.has(m.qq_number)) return true;
         }
-      });
+        return false;
+      }
+
+      const top3Container = document.querySelector('[class*="justify-center"][class*="items-end"]');
+      if (top3Container) {
+        const top3Items = top3Container.querySelectorAll(':scope > div');
+        top3Items.forEach(item => {
+          const nameEl = item.querySelector('h3, [class*="font-bold"]');
+          if (nameEl) {
+            const name = nameEl.textContent.trim();
+            const valid = checkValid(null, name);
+            const avatarEl = item.querySelector('[class*="w-20"], [class*="w-16"], [class*="rounded-full"]');
+            const scoreEl = item.querySelector('[class*="text-2xl"], [class*="text-3xl"], [class*="font-bold"]');
+            
+            if (!valid) {
+              item.style.opacity = '0.3';
+              item.style.pointerEvents = 'none';
+              if (avatarEl) {
+                avatarEl.style.visibility = 'hidden';
+              }
+              if (nameEl) {
+                nameEl.style.visibility = 'hidden';
+              }
+              if (scoreEl) {
+                scoreEl.style.visibility = 'hidden';
+              }
+            } else {
+              item.style.opacity = '1';
+              item.style.pointerEvents = '';
+              if (avatarEl) avatarEl.style.visibility = '';
+              if (nameEl) nameEl.style.visibility = '';
+              if (scoreEl) scoreEl.style.visibility = '';
+            }
+          }
+        });
+      }
 
       const listItems = document.querySelectorAll('[class*="divide-y"] > a[href*="/members/"], [class*="divide-y"] > div');
+      let visibleCount = 0;
+      
       listItems.forEach(item => {
         const href = item.getAttribute('href') || '';
         const idMatch = href.match(/\/members\/(.+)/);
@@ -879,36 +906,43 @@
         const nameEl = item.querySelector('h3, [class*="font-semibold"], [class*="font-medium"]');
         const nickname = nameEl ? nameEl.textContent.trim() : '';
 
-        if (!shouldShowMember(memberId, nickname)) {
+        const valid = checkValid(memberId, nickname);
+        
+        if (!valid) {
           item.style.display = 'none';
         } else {
           item.style.display = '';
+          visibleCount++;
         }
       });
 
-      const countEl = document.querySelector('[class*="text-gray-400"]');
-      if (countEl && countEl.textContent.includes('位玩家')) {
-        const visibleCount = Array.from(listItems).filter(c => c.style.display !== 'none').length;
-        const top3Visible = Array.from(top3).filter(c => c.style.display !== 'none').length;
-        const total = visibleCount + top3Visible;
-        if (total > 0) {
-          countEl.textContent = `共 ${total} 位玩家`;
+      const top3ValidCount = top3Container ? 
+        Array.from(top3Container.querySelectorAll(':scope > div')).filter(i => i.style.opacity !== '0.3').length : 0;
+
+      const totalCount = visibleCount + top3ValidCount;
+
+      const allTextElements = document.querySelectorAll('p, span');
+      allTextElements.forEach(el => {
+        const text = el.textContent.trim();
+        if (text.includes('位玩家') && el.children.length === 0) {
+          el.textContent = `共 ${totalCount} 位玩家`;
         }
-      }
+      });
     }
 
     let filterTimer = null;
     const observer = new MutationObserver(function() {
       clearTimeout(filterTimer);
-      filterTimer = setTimeout(filterScoreboard, 100);
+      filterTimer = setTimeout(filterScoreboard, 150);
     });
 
     if (document.body) {
-      observer.observe(document.body, { childList: true, subtree: true });
+      observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     }
 
     setTimeout(filterScoreboard, 500);
     setTimeout(filterScoreboard, 1500);
+    setTimeout(filterScoreboard, 3000);
 
     console.log('%c🏆 积分榜页面同步过滤已启动', 'color: #f59e0b; font-weight: bold;');
   }
