@@ -825,7 +825,7 @@
       const users = getUsers();
       const result = [];
       for (const user of users) {
-        const score = getMemberScore(user.id);
+        const score = calculateMemberPoints(user.id);
         result.push({
           id: user.id,
           nickname: user.nickname,
@@ -845,50 +845,45 @@
       const top3Items = top3Container.querySelectorAll(':scope > div');
       if (top3Items.length < 3) return false;
 
-      const positions = [1, 0, 2];
-      const positionLabels = ['亚军', '冠军', '季军'];
-      const positionColors = ['text-gray-300', 'text-yellow-400', 'text-amber-600'];
+      const displayOrder = [1, 0, 2];
 
       top3Items.forEach((item, idx) => {
-        const pos = positions[idx];
-        const user = validUsers[pos];
+        const rankIdx = displayOrder[idx];
+        const user = validUsers[rankIdx];
 
-        const nameEl = item.querySelector('h3, [class*="font-bold"]');
-        const avatarEl = item.querySelector('img, [class*="w-20"], [class*="w-16"], [class*="rounded-full"]');
+        const nameEl = item.querySelector('h3');
+        const avatarImg = item.querySelector('img');
+        const avatarDiv = item.querySelector('[class*="rounded-full"]');
         const scoreEls = item.querySelectorAll('[class*="text-2xl"], [class*="text-3xl"]');
-        const labelEl = item.querySelector('[class*="text-xs"], [class*="text-sm"]');
+        const rankBadge = item.querySelector('.absolute [class*="rounded-full"] span, [class*="absolute"] span');
+        const labelEl = item.querySelector('[class*="mt-2"]');
 
         if (user) {
           item.style.opacity = '1';
           item.style.pointerEvents = '';
+          item.style.display = '';
+
           if (nameEl) {
             nameEl.textContent = user.nickname;
-            nameEl.style.visibility = '';
           }
+
           if (scoreEls.length > 0) {
             scoreEls[0].textContent = user.score;
-            scoreEls[0].style.visibility = '';
           }
-          if (avatarEl && avatarEl.tagName === 'IMG') {
-            avatarEl.src = user.avatar_url || generateAvatar(user.nickname);
-            avatarEl.style.visibility = '';
-            avatarEl.style.opacity = '1';
-          } else if (avatarEl) {
-            avatarEl.style.visibility = '';
-            avatarEl.style.opacity = '1';
+
+          if (avatarImg) {
+            avatarImg.src = user.avatar_url || generateAvatar(user.nickname);
+            avatarImg.style.display = '';
+            if (avatarImg.nextElementSibling) {
+              avatarImg.nextElementSibling.style.display = 'none';
+            }
+          } else if (avatarDiv) {
+            const fallbackDiv = avatarDiv.querySelector('[class*="bg-gray-600"]');
+            if (fallbackDiv) fallbackDiv.style.display = 'none';
           }
         } else {
-          item.style.opacity = '0.25';
+          item.style.opacity = '0.2';
           item.style.pointerEvents = 'none';
-          if (nameEl) {
-            nameEl.style.visibility = 'hidden';
-          }
-          if (scoreEls.length > 0) {
-            scoreEls[0].style.visibility = 'hidden';
-          }
-          if (avatarEl) {
-            avatarEl.style.visibility = 'hidden';
-          }
         }
       });
 
@@ -899,51 +894,39 @@
       const listContainer = document.querySelector('[class*="divide-y"]');
       if (!listContainer) return false;
 
-      const listItems = listContainer.querySelectorAll('a[href*="/members/"], div[class*="flex"]');
+      const listItems = listContainer.querySelectorAll('a[href*="/members/"]');
       if (listItems.length === 0) return false;
 
-      let visibleIdx = 0;
       listItems.forEach(item => {
         const href = item.getAttribute('href') || '';
         const idMatch = href.match(/\/members\/(.+)/);
         const memberId = idMatch ? idMatch[1] : null;
-        
-        const nameEl = item.querySelector('h3, [class*="font-semibold"], [class*="font-medium"]');
+
+        const nameEl = item.querySelector('h3');
         const nickname = nameEl ? nameEl.textContent.trim() : '';
 
-        const isValid = validUsers.some(u => 
-          (memberId && u.id === memberId) || 
+        const userIdx = validUsers.findIndex(u =>
+          (memberId && u.id === memberId) ||
           (nickname && u.nickname === nickname)
         );
 
-        if (!isValid) {
+        if (userIdx === -1) {
           item.style.display = 'none';
           return;
         }
 
         item.style.display = '';
-        visibleIdx++;
+        const displayRank = userIdx + 1;
 
-        const rankEl = item.querySelector('.rounded-full, [class*="bg-"], [class*="text-white"]');
-        if (rankEl) {
-          const rankText = rankEl.textContent.trim();
-          if (!isNaN(parseInt(rankText))) {
-            rankEl.textContent = visibleIdx;
-          }
+        const rankBadge = item.querySelector('[class*="rounded-full"][class*="flex"]');
+        if (rankBadge) {
+          rankBadge.textContent = displayRank;
         }
 
-        const allSpans = item.querySelectorAll('span, div');
-        allSpans.forEach(el => {
-          if (el.children.length === 0) {
-            const text = el.textContent.trim();
-            if (/^\d+$/.test(text) && text.length <= 2) {
-              const parent = el.parentElement;
-              if (parent && parent.classList.toString().includes('flex')) {
-                el.textContent = visibleIdx;
-              }
-            }
-          }
-        });
+        const scoreEl = item.querySelector('[class*="text-right"] [class*="font-bold"], [class*="text-green-500"]');
+        if (scoreEl) {
+          scoreEl.textContent = validUsers[userIdx].score;
+        }
       });
 
       return true;
@@ -954,7 +937,7 @@
       const totalScore = validUsers.reduce((sum, u) => sum + u.score, 0);
       const highestScore = validUsers.length > 0 ? validUsers[0].score : 0;
 
-      const statCards = document.querySelectorAll('[class*="grid-cols-2"] [class*="mc-card"], [class*="grid-cols-4"] [class*="mc-card"]');
+      const statCards = document.querySelectorAll('[class*="grid-cols-2"] .mc-card, [class*="grid-cols-4"] .mc-card');
       statCards.forEach(card => {
         const labelEl = card.querySelector('[class*="text-sm"], [class*="text-gray-400"]');
         const valueEl = card.querySelector('[class*="text-2xl"], [class*="font-bold"]');
@@ -970,33 +953,36 @@
         }
       });
 
-      const countTexts = document.querySelectorAll('p, span');
-      countTexts.forEach(el => {
-        if (el.children.length === 0 && el.textContent.includes('位玩家')) {
-          el.textContent = `共 ${totalPlayers} 位玩家`;
-        }
-      });
+      const countEl = document.querySelector('[class*="border-b"] [class*="text-gray-400"], [class*="flex"][class*="justify-between"] [class*="text-sm"]');
+      if (countEl && countEl.textContent.includes('位玩家')) {
+        countEl.textContent = `共 ${totalPlayers} 位玩家`;
+      }
     }
 
     function refreshScoreboard() {
-      const validUsers = getValidUsersWithScores();
-      updateTop3(validUsers);
-      updateListRanking(validUsers);
-      updateStats(validUsers);
+      try {
+        const validUsers = getValidUsersWithScores();
+        updateTop3(validUsers);
+        updateListRanking(validUsers);
+        updateStats(validUsers);
+      } catch (e) {
+        console.warn('积分榜刷新失败:', e);
+      }
     }
 
     let refreshTimer = null;
     const observer = new MutationObserver(function() {
       clearTimeout(refreshTimer);
-      refreshTimer = setTimeout(refreshScoreboard, 200);
+      refreshTimer = setTimeout(refreshScoreboard, 150);
     });
 
     if (document.body) {
       observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     }
 
-    setTimeout(refreshScoreboard, 400);
-    setTimeout(refreshScoreboard, 1200);
+    setTimeout(refreshScoreboard, 300);
+    setTimeout(refreshScoreboard, 800);
+    setTimeout(refreshScoreboard, 1500);
     setTimeout(refreshScoreboard, 2500);
 
     console.log('%c🏆 积分榜同步过滤已启动', 'color: #f59e0b; font-weight: bold;');
