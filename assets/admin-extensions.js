@@ -821,83 +821,88 @@
     if (document.body.dataset.scoreboardEnhanced === 'true') return;
     document.body.dataset.scoreboardEnhanced = 'true';
 
-    function getValidUserIds() {
+    function getValidUsersWithScores() {
       const users = getUsers();
-      const userIds = new Set(users.map(u => u.id));
-      const userNicknames = new Set(users.map(u => u.nickname));
-      const userQQs = new Set(users.map(u => u.qq_number));
-      return { userIds, userNicknames, userQQs };
-    }
-
-    function isValidMember(memberId, nickname) {
-      const { userIds, userNicknames, userQQs } = getValidUserIds();
-      if (memberId && userIds.has(memberId)) return true;
-      if (nickname && userNicknames.has(nickname.trim())) return true;
-      const members = getMembers();
-      const member = members.find(m => 
-        (memberId && m.id === memberId) || 
-        (nickname && m.nickname === nickname.trim())
-      );
-      if (member) {
-        if (userQQs.has(member.qq_number)) return true;
-        if (member.id.startsWith('user_') && userIds.has(member.id)) return true;
-      }
-      return false;
-    }
-
-    function filterScoreboard() {
-      const { userIds, userNicknames, userQQs } = getValidUserIds();
-      const members = getMembers();
-
-      function checkValid(id, name) {
-        if (id && userIds.has(id)) return true;
-        if (name && userNicknames.has(name.trim())) return true;
-        const m = members.find(x => 
-          (id && x.id === id) || (name && x.nickname === name.trim())
-        );
-        if (m) {
-          if (userQQs.has(m.qq_number)) return true;
-        }
-        return false;
-      }
-
-      const top3Container = document.querySelector('[class*="justify-center"][class*="items-end"]');
-      if (top3Container) {
-        const top3Items = top3Container.querySelectorAll(':scope > div');
-        top3Items.forEach(item => {
-          const nameEl = item.querySelector('h3, [class*="font-bold"]');
-          if (nameEl) {
-            const name = nameEl.textContent.trim();
-            const valid = checkValid(null, name);
-            const avatarEl = item.querySelector('[class*="w-20"], [class*="w-16"], [class*="rounded-full"]');
-            const scoreEl = item.querySelector('[class*="text-2xl"], [class*="text-3xl"], [class*="font-bold"]');
-            
-            if (!valid) {
-              item.style.opacity = '0.3';
-              item.style.pointerEvents = 'none';
-              if (avatarEl) {
-                avatarEl.style.visibility = 'hidden';
-              }
-              if (nameEl) {
-                nameEl.style.visibility = 'hidden';
-              }
-              if (scoreEl) {
-                scoreEl.style.visibility = 'hidden';
-              }
-            } else {
-              item.style.opacity = '1';
-              item.style.pointerEvents = '';
-              if (avatarEl) avatarEl.style.visibility = '';
-              if (nameEl) nameEl.style.visibility = '';
-              if (scoreEl) scoreEl.style.visibility = '';
-            }
-          }
+      const result = [];
+      for (const user of users) {
+        const score = getMemberScore(user.id);
+        result.push({
+          id: user.id,
+          nickname: user.nickname,
+          qq_number: user.qq_number,
+          avatar_url: user.avatar_url || '',
+          score: score
         });
       }
+      result.sort((a, b) => b.score - a.score);
+      return result;
+    }
 
-      const listItems = document.querySelectorAll('[class*="divide-y"] > a[href*="/members/"], [class*="divide-y"] > div');
-      let visibleCount = 0;
-      
+    function updateTop3(validUsers) {
+      const top3Container = document.querySelector('[class*="justify-center"][class*="items-end"]');
+      if (!top3Container) return false;
+
+      const top3Items = top3Container.querySelectorAll(':scope > div');
+      if (top3Items.length < 3) return false;
+
+      const positions = [1, 0, 2];
+      const positionLabels = ['亚军', '冠军', '季军'];
+      const positionColors = ['text-gray-300', 'text-yellow-400', 'text-amber-600'];
+
+      top3Items.forEach((item, idx) => {
+        const pos = positions[idx];
+        const user = validUsers[pos];
+
+        const nameEl = item.querySelector('h3, [class*="font-bold"]');
+        const avatarEl = item.querySelector('img, [class*="w-20"], [class*="w-16"], [class*="rounded-full"]');
+        const scoreEls = item.querySelectorAll('[class*="text-2xl"], [class*="text-3xl"]');
+        const labelEl = item.querySelector('[class*="text-xs"], [class*="text-sm"]');
+
+        if (user) {
+          item.style.opacity = '1';
+          item.style.pointerEvents = '';
+          if (nameEl) {
+            nameEl.textContent = user.nickname;
+            nameEl.style.visibility = '';
+          }
+          if (scoreEls.length > 0) {
+            scoreEls[0].textContent = user.score;
+            scoreEls[0].style.visibility = '';
+          }
+          if (avatarEl && avatarEl.tagName === 'IMG') {
+            avatarEl.src = user.avatar_url || generateAvatar(user.nickname);
+            avatarEl.style.visibility = '';
+            avatarEl.style.opacity = '1';
+          } else if (avatarEl) {
+            avatarEl.style.visibility = '';
+            avatarEl.style.opacity = '1';
+          }
+        } else {
+          item.style.opacity = '0.25';
+          item.style.pointerEvents = 'none';
+          if (nameEl) {
+            nameEl.style.visibility = 'hidden';
+          }
+          if (scoreEls.length > 0) {
+            scoreEls[0].style.visibility = 'hidden';
+          }
+          if (avatarEl) {
+            avatarEl.style.visibility = 'hidden';
+          }
+        }
+      });
+
+      return true;
+    }
+
+    function updateListRanking(validUsers) {
+      const listContainer = document.querySelector('[class*="divide-y"]');
+      if (!listContainer) return false;
+
+      const listItems = listContainer.querySelectorAll('a[href*="/members/"], div[class*="flex"]');
+      if (listItems.length === 0) return false;
+
+      let visibleIdx = 0;
       listItems.forEach(item => {
         const href = item.getAttribute('href') || '';
         const idMatch = href.match(/\/members\/(.+)/);
@@ -906,45 +911,95 @@
         const nameEl = item.querySelector('h3, [class*="font-semibold"], [class*="font-medium"]');
         const nickname = nameEl ? nameEl.textContent.trim() : '';
 
-        const valid = checkValid(memberId, nickname);
-        
-        if (!valid) {
+        const isValid = validUsers.some(u => 
+          (memberId && u.id === memberId) || 
+          (nickname && u.nickname === nickname)
+        );
+
+        if (!isValid) {
           item.style.display = 'none';
-        } else {
-          item.style.display = '';
-          visibleCount++;
+          return;
+        }
+
+        item.style.display = '';
+        visibleIdx++;
+
+        const rankEl = item.querySelector('.rounded-full, [class*="bg-"], [class*="text-white"]');
+        if (rankEl) {
+          const rankText = rankEl.textContent.trim();
+          if (!isNaN(parseInt(rankText))) {
+            rankEl.textContent = visibleIdx;
+          }
+        }
+
+        const allSpans = item.querySelectorAll('span, div');
+        allSpans.forEach(el => {
+          if (el.children.length === 0) {
+            const text = el.textContent.trim();
+            if (/^\d+$/.test(text) && text.length <= 2) {
+              const parent = el.parentElement;
+              if (parent && parent.classList.toString().includes('flex')) {
+                el.textContent = visibleIdx;
+              }
+            }
+          }
+        });
+      });
+
+      return true;
+    }
+
+    function updateStats(validUsers) {
+      const totalPlayers = validUsers.length;
+      const totalScore = validUsers.reduce((sum, u) => sum + u.score, 0);
+      const highestScore = validUsers.length > 0 ? validUsers[0].score : 0;
+
+      const statCards = document.querySelectorAll('[class*="grid-cols-2"] [class*="mc-card"], [class*="grid-cols-4"] [class*="mc-card"]');
+      statCards.forEach(card => {
+        const labelEl = card.querySelector('[class*="text-sm"], [class*="text-gray-400"]');
+        const valueEl = card.querySelector('[class*="text-2xl"], [class*="font-bold"]');
+        if (!labelEl || !valueEl) return;
+
+        const label = labelEl.textContent.trim();
+        if (label.includes('参与玩家') || label.includes('玩家')) {
+          valueEl.textContent = totalPlayers;
+        } else if (label.includes('总积分')) {
+          valueEl.textContent = totalScore;
+        } else if (label.includes('最高积分')) {
+          valueEl.textContent = highestScore;
         }
       });
 
-      const top3ValidCount = top3Container ? 
-        Array.from(top3Container.querySelectorAll(':scope > div')).filter(i => i.style.opacity !== '0.3').length : 0;
-
-      const totalCount = visibleCount + top3ValidCount;
-
-      const allTextElements = document.querySelectorAll('p, span');
-      allTextElements.forEach(el => {
-        const text = el.textContent.trim();
-        if (text.includes('位玩家') && el.children.length === 0) {
-          el.textContent = `共 ${totalCount} 位玩家`;
+      const countTexts = document.querySelectorAll('p, span');
+      countTexts.forEach(el => {
+        if (el.children.length === 0 && el.textContent.includes('位玩家')) {
+          el.textContent = `共 ${totalPlayers} 位玩家`;
         }
       });
     }
 
-    let filterTimer = null;
+    function refreshScoreboard() {
+      const validUsers = getValidUsersWithScores();
+      updateTop3(validUsers);
+      updateListRanking(validUsers);
+      updateStats(validUsers);
+    }
+
+    let refreshTimer = null;
     const observer = new MutationObserver(function() {
-      clearTimeout(filterTimer);
-      filterTimer = setTimeout(filterScoreboard, 150);
+      clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(refreshScoreboard, 200);
     });
 
     if (document.body) {
       observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     }
 
-    setTimeout(filterScoreboard, 500);
-    setTimeout(filterScoreboard, 1500);
-    setTimeout(filterScoreboard, 3000);
+    setTimeout(refreshScoreboard, 400);
+    setTimeout(refreshScoreboard, 1200);
+    setTimeout(refreshScoreboard, 2500);
 
-    console.log('%c🏆 积分榜页面同步过滤已启动', 'color: #f59e0b; font-weight: bold;');
+    console.log('%c🏆 积分榜同步过滤已启动', 'color: #f59e0b; font-weight: bold;');
   }
 
   function setupScoreboardAutoRefresh() {
