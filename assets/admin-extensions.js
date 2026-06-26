@@ -86,14 +86,25 @@
     const users = getUsers();
     const members = getMembers();
     
-    const memberIds = new Set(members.map(m => m.id));
     const userIds = new Set(users.map(u => u.id));
     
     let changed = false;
-    const newMembers = [...members];
+    const newMembers = [];
     
     for (const user of users) {
-      if (!memberIds.has(user.id)) {
+      const existingMember = members.find(m => m.id === user.id);
+      if (existingMember) {
+        let memberChanged = false;
+        const updatedMember = { ...existingMember };
+        if (updatedMember.nickname !== user.nickname) { updatedMember.nickname = user.nickname; memberChanged = true; }
+        if (updatedMember.qq_number !== user.qq_number) { updatedMember.qq_number = user.qq_number; memberChanged = true; }
+        if (user.avatar_url && updatedMember.avatar_url !== user.avatar_url) { updatedMember.avatar_url = user.avatar_url; memberChanged = true; }
+        if (memberChanged) {
+          changed = true;
+          console.log(`[同步] 更新成员: ${user.nickname}`);
+        }
+        newMembers.push(updatedMember);
+      } else {
         newMembers.push({
           id: user.id,
           nickname: user.nickname,
@@ -105,33 +116,19 @@
         });
         changed = true;
         console.log(`[同步] 新增成员: ${user.nickname}`);
-      } else {
-        const memberIdx = newMembers.findIndex(m => m.id === user.id);
-        if (memberIdx !== -1) {
-          const m = newMembers[memberIdx];
-          let memberChanged = false;
-          if (m.nickname !== user.nickname) { m.nickname = user.nickname; memberChanged = true; }
-          if (m.qq_number !== user.qq_number) { m.qq_number = user.qq_number; memberChanged = true; }
-          if (user.avatar_url && m.avatar_url !== user.avatar_url) { m.avatar_url = user.avatar_url; memberChanged = true; }
-          if (memberChanged) {
-            changed = true;
-            newMembers[memberIdx] = m;
-            console.log(`[同步] 更新成员: ${user.nickname}`);
-          }
-        }
       }
     }
     
-    const finalMembers = newMembers.filter(m => userIds.has(m.id));
-    if (finalMembers.length !== newMembers.length) {
+    const removedCount = members.length - newMembers.length;
+    if (removedCount > 0) {
       changed = true;
-      console.log(`[同步] 删除了 ${newMembers.length - finalMembers.length} 个不在用户列表中的成员`);
+      console.log(`[同步] 删除了 ${removedCount} 个不在用户列表中的成员`);
     }
     
     if (changed) {
-      setMembers(finalMembers);
+      setMembers(newMembers);
       triggerStorageEvent();
-      console.log(`[同步] 用户→成员库同步完成，共 ${finalMembers.length} 名成员`);
+      console.log(`[同步] 用户→成员库同步完成，共 ${newMembers.length} 名成员`);
     }
     
     return changed;
@@ -799,12 +796,125 @@
     console.log('%c🔄 用户→成员库 自动同步已启动', 'color: #4ade80; font-weight: bold;');
   }
 
+  function enhanceMembersPage() {
+    const path = getCurrentPath();
+    if (!path.includes('/members') || path.includes('/members/')) return;
+    if (document.body.dataset.membersEnhanced === 'true') return;
+    document.body.dataset.membersEnhanced = 'true';
+
+    const userIds = new Set(getUsers().map(u => u.id));
+    const userQQs = new Set(getUsers().map(u => u.qq_number));
+
+    function filterMembers() {
+      const memberCards = document.querySelectorAll('[class*="grid"] > a[href*="/members/"], [class*="grid"] > div[class*="group"]');
+      if (memberCards.length === 0) return;
+
+      memberCards.forEach(card => {
+        const qqEl = card.querySelector('.font-mono');
+        const href = card.getAttribute('href') || '';
+        const idMatch = href.match(/\/members\/(.+)/);
+        const memberId = idMatch ? idMatch[1] : null;
+
+        let shouldShow = false;
+        if (memberId && userIds.has(memberId)) {
+          shouldShow = true;
+        }
+        if (!shouldShow && qqEl) {
+          const qq = qqEl.textContent.replace(/QQ:\s*/, '').trim();
+          if (userQQs.has(qq)) {
+            shouldShow = true;
+          }
+        }
+
+        if (!shouldShow) {
+          card.style.display = 'none';
+        } else {
+          card.style.display = '';
+        }
+      });
+
+      const countEl = document.querySelector('p[class*="text-2xl"], p[class*="font-bold"]');
+      if (countEl) {
+        const visibleCount = Array.from(memberCards).filter(c => c.style.display !== 'none').length;
+        if (visibleCount > 0) {
+          countEl.textContent = visibleCount;
+        }
+      }
+    }
+
+    let filterTimer = null;
+    const observer = new MutationObserver(function() {
+      clearTimeout(filterTimer);
+      filterTimer = setTimeout(filterMembers, 100);
+    });
+
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    setTimeout(filterMembers, 500);
+    setTimeout(filterMembers, 1500);
+
+    console.log('%c👥 成员库页面同步过滤已启动', 'color: #10b981; font-weight: bold;');
+  }
+
+  function setupScoreboardAutoRefresh() {
+    const path = getCurrentPath();
+    if (!path.includes('/scoreboard') && !path.includes('/ranking') && !path.includes('/积分榜')) return;
+    if (document.body.dataset.scoreboardRefreshSetup === 'true') return;
+    document.body.dataset.scoreboardRefreshSetup = 'true';
+
+    let lastScoreRecords = JSON.stringify(getScoreRecords());
+    let isReloading = false;
+
+    function checkAndRefresh() {
+      if (isReloading) return;
+      const currentRecords = JSON.stringify(getScoreRecords());
+      if (currentRecords !== lastScoreRecords) {
+        lastScoreRecords = currentRecords;
+        isReloading = true;
+        setTimeout(() => {
+          window.location.reload();
+        }, 150);
+      }
+    }
+
+    window.addEventListener('storage', checkAndRefresh);
+
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = function(key, value) {
+      originalSetItem.call(this, key, value);
+      if (key === STORAGE_PREFIX + 'score_records') {
+        checkAndRefresh();
+      }
+    };
+
+    const originalRemoveItem = localStorage.removeItem;
+    localStorage.removeItem = function(key) {
+      originalRemoveItem.call(this, key);
+      if (key === STORAGE_PREFIX + 'score_records') {
+        checkAndRefresh();
+      }
+    };
+
+    setInterval(checkAndRefresh, 1000);
+
+    const observer = new MutationObserver(function() {
+      checkAndRefresh();
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+
+    console.log('%c📊 积分榜自动刷新已启动', 'color: #fbbf24; font-weight: bold;');
+  }
+
   function initPageEnhancements() {
     if (isAdmin()) {
       setupAutoSync();
       setupSpecialRecordsAutoRefresh();
+      setupScoreboardAutoRefresh();
       enhanceSpecialRecordsPage();
       enhanceUserManagementPage();
+      enhanceMembersPage();
     }
   }
 
