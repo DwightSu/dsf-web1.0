@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <rect id="p" width="4" height="4" rx="0"/>
+  </defs>
+  
+  <!-- Sprout at top -->
+  <use xlink:href="#p" x="28" y="12" fill="#64a85a"/>
+  <use xlink:href="#p" x="32" y="12" fill="#88ca7d"/>
+  <use xlink:href="#p" x="36" y="12" fill="#64a85a"/>
+  <use xlink:href="#p" x="24" y="16" fill="#88ca7d"/>
+  <use xlink:href="#p" x="28" y="16" fill="#aadd9e"/>
+  <use xlink:href="#p" x="32" y="16" fill="#aadd9e"/>
+  <use xlink:href="#p" x="36" y="16" fill="#aadd9e"/>
+  <use xlink:href="#p" x="40" y="16" fill="#88ca7d"/>
+  <use xlink:href="#p" x="28" y="20" fill="#64a85a"/>
+  <use xlink:href="#p" x="32" y="20" fill="#88ca7d"/>
+  
+  <!-- Potato body -->
+  <use xlink:href="#p" x="16" y="24" fill="#664422"/>
+  <use xlink:href="#p" x="20" y="24" fill="#664422"/>
+  <use xlink:href="#p" x="24" y="24" fill="#664422"/>
+  <use xlink:href="#p" x="28" y="24" fill="#664422"/>
+  <use xlink:href="#p" x="32" y="24" fill="#664422"/>
+  <use xlink:href="#p" x="36" y="24" fill="#664422"/>
+  <use xlink:href="#p" x="40" y="24" fill="#664422"/>
+  
+  <use xlink:href="#p" x="12" y="28" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="16" y="28" fill="#a07040"/>
+  <use xlink:href="#p" x="20" y="28" fill="#a07040"/>
+  <use xlink:href="#p" x="24" y="28" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="28" y="28" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="32" y="28" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="36" y="28" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="40" y="28" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="44" y="28" fill="#8b5a2b"/>
+  
+  <use xlink:href="#p" x="8" y="32" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="12" y="32" fill="#a07040"/>
+  <use xlink:href="#p" x="16" y="32" fill="#508050"/>
+  <use xlink:href="#p" x="20" y="32" fill="#66a066"/>
+  <use xlink:href="#p" x="24" y="32" fill="#a07040"/>
+  <use xlink:href="#p" x="28" y="32" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="32" y="32" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="36" y="32" fill="#a07040"/>
+  <use xlink:href="#p" x="40" y="32" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="44" y="32" fill="#8b5a2b"/>
+  
+  <use xlink:href="#p" x="8" y="36" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="12" y="36" fill="#a07040"/>
+  <use xlink:href="#p" x="16" y="36" fill="#66a066"/>
+  <use xlink:href="#p" x="20" y="36" fill="#88c888"/>
+  <use xlink:href="#p" x="24" y="36" fill="#88c888"/>
+  <use xlink:href="#p" x="28" y="36" fill="#66a066"/>
+  <use xlink:href="#p" x="32" y="36" fill="#66a066"/>
+  <use xlink:href="#p" x="36" y="36" fill="#66a066"/>
+  <use xlink:href="#p" x="40" y="36" fill="#a07040"/>
+  <use xlink:href="#p" x="44" y="36" fill="#8b5a2b"/>
+  
+  <use xlink:href="#p" x="8" y="40" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="12" y="40" fill="#66a066"/>
+  <use xlink:href="#p" x="16" y="40" fill="#88c888"/>
+  <use xlink:href="#p" x="20" y="40" fill="#88c888"/>
+  <use xlink:href="#p" x="24" y="40" fill="#88c888"/>
+  <use xlink:href="#p" x="28" y="40" fill="#66a066"/>
+  <use xlink:href="#p" x="32" y="40" fill="#88c888"/>
+  <use xlink:href="#p" x="36" y="40" fill="#66a066"/>
+  <use xlink:href="#p" x="40" y="40" fill="#a07040"/>
+  <use xlink:href="#p" x="44" y="40" fill="#8b5a2b"/>
+  
+  <use xlink:href="#p" x="12" y="44" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="16" y="44" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="20" y="44" fill="#508050"/>
+  <use xlink:href="#p" x="24" y="44" fill="#66a066"/>
+  <use xlink:href="#p" x="28" y="44" fill="#a07040"/>
+  <use xlink:href="#p" x="32" y="44" fill="#a07040"/>
+  <use xlink:href="#p" x="36" y="44" fill="#a07040"/>
+  <use xlink:href="#p" x="40" y="44" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="44" y="44" fill="#8b5a2b"/>
+  
+  <use xlink:href="#p" x="12" y="48" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="16" y="48" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="20" y="48" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="24" y="48" fill="#a07040"/>
+  <use xlink:href="#p" x="28" y="48" fill="#a07040"/>
+  <use xlink:href="#p" x="32" y="48" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="36" y="48" fill="#8b5a2b"/>
+  <use xlink:href="#p" x="40" y="48" fill="#8b5a2b"/>
+  
+  <use xlink:href="#p" x="16" y="52" fill="#664422"/>
+  <use xlink:href="#p" x="20" y="52" fill="#664422"/>
+  <use xlink:href="#p" x="24" y="52" fill="#664422"/>
+  <use xlink:href="#p" x="28" y="52" fill="#664422"/>
+  <use xlink:href="#p" x="32" y="52" fill="#664422"/>
+</svg>
