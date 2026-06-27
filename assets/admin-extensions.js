@@ -1037,7 +1037,83 @@
     console.log('%c📊 积分榜自动刷新已启动', 'color: #fbbf24; font-weight: bold;');
   }
 
+  function enhanceSpecialRecordsBanButton() {
+    const path = getCurrentPath();
+    if (!path.includes('/special-records')) return;
+    if (document.querySelector('.admin-ban-btn')) return;
+
+    const tryAddBanButton = function() {
+      if (document.querySelector('.admin-ban-btn')) return true;
+
+      const addBtn = document.querySelector('button[class*="purple"]');
+      let targetContainer = null;
+
+      if (addBtn) {
+        targetContainer = addBtn.parentElement;
+        if (targetContainer) {
+          const banLink = document.createElement('a');
+          banLink.className = 'admin-ban-btn admin-animate-in';
+          banLink.href = 'https://bans.geukchisseokda.top';
+          banLink.target = '_blank';
+          banLink.rel = 'noopener noreferrer';
+          banLink.innerHTML = '🚫 被ban名单';
+          banLink.style.marginLeft = '8px';
+          targetContainer.appendChild(banLink);
+          return true;
+        }
+      }
+
+      const cardSelectors = [
+        '.mc-card .flex.justify-between',
+        '.mc-card [class*="flex-wrap"][class*="gap-4"]',
+        '[class*="flex-wrap"][class*="gap-4"][class*="justify-between"]'
+      ];
+
+      for (const sel of cardSelectors) {
+        const el = document.querySelector(sel);
+        if (el && el.querySelector('button, input')) {
+          const banLink = document.createElement('a');
+          banLink.className = 'admin-ban-btn admin-animate-in';
+          banLink.href = 'https://bans.geukchisseokda.top';
+          banLink.target = '_blank';
+          banLink.rel = 'noopener noreferrer';
+          banLink.innerHTML = '🚫 被ban名单';
+          banLink.style.marginLeft = 'auto';
+          el.appendChild(banLink);
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    function tryWithDelay() {
+      if (attempts >= maxAttempts) return;
+      if (tryAddBanButton()) return;
+      attempts++;
+      setTimeout(tryWithDelay, 300 * attempts);
+    }
+
+    tryWithDelay();
+
+    const observer = new MutationObserver(function() {
+      clearTimeout(window._banBtnObserverTimer);
+      window._banBtnObserverTimer = setTimeout(function() {
+        tryAddBanButton();
+      }, 200);
+    });
+    
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
   function initPageEnhancements() {
+    enhanceSpecialRecordsBanButton();
+
     if (isAdmin()) {
       setupAutoSync();
       setupSpecialRecordsAutoRefresh();
